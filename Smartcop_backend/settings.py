@@ -25,7 +25,9 @@ SECRET_KEY = 'django-insecure-$mi5hxg5oj7gd7*7-303ja@hq&5hj_4++zk@$(9azme@-y(#(=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*','https://ai-cop-frontend.vercel.app/']
+
+
 
 
 # Application definition
@@ -133,3 +135,4 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_HEADERS = ["*"]
 CORS_ALLOW_METHODS = ["*"]
+CORS_ALLOW_ALL_ORIGINS = True

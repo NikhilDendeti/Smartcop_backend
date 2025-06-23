@@ -51,6 +51,7 @@ class Complaint(models.Model):
         ('fir_registered', 'FIR Registered'),
         ('gd_recorded', 'GD Recorded'),
         ('resolved', 'Resolved'),
+        ('under_investigation', 'Under Investigation'),
     )
 
     complaint_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
