@@ -132,9 +132,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "https://smart-complaint-pilot.vercel.app",
-    "https://aicopfrontend.netlify.app/",
-    "https://ai-cop-frontend.vercel.app/"
+    "https://aicopfrontend.netlify.app",
+    "https://ai-cop-frontend.vercel.app"
 ]
-CORS_ALLOW_HEADERS = ["*"]
-CORS_ALLOW_METHODS = ["*"]
-Access-Control-Allow-Origin: https://ai-cop-frontend.vercel.app
+CORS_ALLOW_CREDENTIALS = True
+from corsheaders.defaults import default_headers, default_methods
+
+CORS_ALLOW_HEADERS = list(default_headers)
+CORS_ALLOW_METHODS = list(default_methods)
+
