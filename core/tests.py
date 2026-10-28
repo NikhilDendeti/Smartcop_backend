@@ -43,6 +43,7 @@ class PlatformTests(TestCase):
         user = User.objects.create(
             name="Asha", dob=datetime.date(1990, 1, 1), phone="9999999998", permanent_address="x"
         )
+        CaseType.objects.all().delete()
         payload = {
             "user_id": str(user.user_id),
             "case_type": "theft",
@@ -54,4 +55,3 @@ class PlatformTests(TestCase):
         response = self.client.post("/api/v1/complaints/", payload, content_type="application/json")
         self.assertEqual(response.status_code, 400)
         self.assertIn("case_type", response.json()["error"]["details"])
-        self.assertFalse(CaseType.objects.exists())

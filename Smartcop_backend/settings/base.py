@@ -22,6 +22,10 @@ def env_list(name, default=""):
 
 SECRET_KEY = os.environ["SECRET_KEY"]
 
+# Fernet key(s) for field-level encryption of personal data, comma-separated to allow rotation.
+# Generate one with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+FIELD_ENCRYPTION_KEY = os.environ.get("FIELD_ENCRYPTION_KEY", "")
+
 DEBUG = False
 
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS")
@@ -39,6 +43,7 @@ INSTALLED_APPS = [
     "core",
     "users",
     "police",
+    "ai",
 ]
 
 MIDDLEWARE = [

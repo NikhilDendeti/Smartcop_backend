@@ -5,12 +5,26 @@ from .models import (
     InvestigationUpdate,
     MagistrateApproval,
     Escalation,
-    CaseProgress
+    CaseProgress,
+    PoliceStation,
+    FIRDraft,
 )
+
+
+@admin.register(PoliceStation)
+class PoliceStationAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'district', 'state', 'is_active')
+    search_fields = ('name', 'code', 'district')
+
+
+@admin.register(FIRDraft)
+class FIRDraftAdmin(admin.ModelAdmin):
+    list_display = ('complaint', 'document_type', 'version', 'source', 'status', 'created_at')
+    list_filter = ('document_type', 'source', 'status')
 
 @admin.register(OfficerRole)
 class OfficerRoleAdmin(admin.ModelAdmin):
-    list_display = ('officer', 'designation', 'department')
+    list_display = ('officer', 'designation', 'department', 'station', 'is_active')
     search_fields = ('officer__name', 'designation')
 
 @admin.register(CaseAssignment)

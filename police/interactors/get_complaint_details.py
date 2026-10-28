@@ -29,7 +29,7 @@ class GetComplaintDetailsInteractor:
             "user": {
                 "name": complaint.user.name,
                 "phone": complaint.user.phone,
-                "aadhar": complaint.user.aadhar_number,
+                "aadhar": complaint.user.aadhar_masked,
             },
             "case_type": complaint.case_type.name if complaint.case_type else "Unknown",
             "status": complaint.status,

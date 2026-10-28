@@ -14,11 +14,27 @@ PROGRESS_STAGES = [
     ("closed_resolved", "Closed/Resolved"),
 ]
 
+class PoliceStation(models.Model):
+    station_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=150)
+    code = models.CharField(max_length=30, unique=True)
+    district = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    address = models.TextField(blank=True, default="")
+    phone = models.CharField(max_length=15, blank=True, default="")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
+
 class OfficerRole(models.Model):
     ROLE_CHOICES = (
         ('head_constable', 'Head Constable'),
         ('sub_inspector', 'Sub-Inspector'),
         ('sho', 'Station House Officer'),
+        ('magistrate', 'Magistrate'),
     )
     officer = models.OneToOneField(
         User,
@@ -27,6 +43,9 @@ class OfficerRole(models.Model):
     )
     designation = models.CharField(max_length=20, choices=ROLE_CHOICES)
     department = models.CharField(max_length=100, blank=True, null=True)
+    # Jurisdiction used for access control. Null for roles not tied to one station (e.g. magistrates).
+    station = models.ForeignKey(PoliceStation, on_delete=models.PROTECT, blank=True, null=True, related_name='officers')
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.officer.name} ({self.get_designation_display()})"
@@ -90,3 +109,29 @@ class CaseProgress(models.Model):
 
     class Meta:
         ordering = ['timestamp']
+
+
+class FIRDraft(models.Model):
+    """A versioned FIR or GD document. AI drafts stay drafts until an officer approves them."""
+
+    DOCUMENT_TYPES = (('fir', 'FIR'), ('gd', 'General Diary entry'))
+    SOURCE_CHOICES = (('ai', 'AI draft'), ('officer', 'Officer'))
+    STATUS_CHOICES = (('draft', 'Draft'), ('approved', 'Approved'), ('rejected', 'Rejected'))
+
+    draft_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    complaint = models.ForeignKey(Complaint, on_delete=models.CASCADE, related_name='fir_drafts')
+    document_type = models.CharField(max_length=3, choices=DOCUMENT_TYPES)
+    version = models.PositiveIntegerField(default=1)
+    content = models.TextField()
+    source = models.CharField(max_length=10, choices=SOURCE_CHOICES)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
+    ai_run = models.ForeignKey('ai.AIRun', on_delete=models.SET_NULL, blank=True, null=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_drafts')
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_drafts')
+    approved_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['complaint', 'document_type', 'version'], name='unique_draft_version'),
+        ]

@@ -1,9 +1,12 @@
 from django.core.exceptions import ImproperlyConfigured
 
 from .base import *  # noqa: F401,F403
-from .base import ALLOWED_HOSTS, CORS_ALLOWED_ORIGINS, DATABASES
+from .base import ALLOWED_HOSTS, CORS_ALLOWED_ORIGINS, DATABASES, FIELD_ENCRYPTION_KEY
 
 DEBUG = False
+
+if not FIELD_ENCRYPTION_KEY:
+    raise ImproperlyConfigured("Set FIELD_ENCRYPTION_KEY; personal data cannot be stored without it.")
 
 if not ALLOWED_HOSTS or "*" in ALLOWED_HOSTS:
     raise ImproperlyConfigured("Set ALLOWED_HOSTS to the exact hostnames served in production.")
