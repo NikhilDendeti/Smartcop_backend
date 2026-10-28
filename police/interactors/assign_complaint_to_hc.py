@@ -8,7 +8,8 @@ class AssignComplaintToHCInteractor:
         self.si_phone = si_phone
         self.notes = notes
         # An already-authorised commanding officer. When given, the Head Constable must be
-        # an active officer at the same station.
+        # an active officer at the same station, and the caller records the status change
+        # through the workflow instead of this class writing a progress entry.
         self.actor = actor
 
     def execute(self):
@@ -42,14 +43,16 @@ class AssignComplaintToHCInteractor:
             role_at_assignment='head_constable',
             notes=self.notes
         )
+        complaint.officer_assigned = hc_user
+        complaint.save(update_fields=['officer_assigned', 'updated_at'])
 
-        # Add progress update
-        CaseProgress.objects.create(
-            complaint=complaint,
-            stage='assigned_to_officer',
-            updated_by=si_user,
-            remarks=self.notes
-        )
+        if self.actor is None:
+            CaseProgress.objects.create(
+                complaint=complaint,
+                stage='assigned',
+                updated_by=si_user,
+                remarks=self.notes
+            )
 
         return {
             "status": "success",

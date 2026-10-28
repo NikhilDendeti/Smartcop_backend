@@ -10,4 +10,10 @@ urlpatterns = [
     path("complaints/mark-under-investigation/", api_views.mark_under_investigation),
     path("complaints/status/", api_views.update_complaint_status),
     path("complaints/<uuid:complaint_id>/", api_views.complaint_details),
+    path("complaints/<uuid:complaint_id>/notes/", api_views.complaint_notes),
+    path("complaints/<uuid:complaint_id>/escalations/", api_views.complaint_escalations),
+    path("complaints/<uuid:complaint_id>/magistrate-approval/", api_views.request_magistrate_approval),
+    path("complaints/<uuid:complaint_id>/magistrate-decision/", api_views.magistrate_decision),
+    path("complaints/<uuid:complaint_id>/drafts/", api_views.complaint_drafts),
+    path("complaints/<uuid:complaint_id>/drafts/<uuid:draft_id>/approve/", api_views.approve_draft),
 ]

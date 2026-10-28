@@ -74,16 +74,21 @@ class ActiveComplaintManager(models.Manager):
         return super().get_queryset().filter(deleted_at__isnull=True)
 
 
+# The one list of case states. A complaint's status and every CaseProgress entry use these values.
+CASE_STATUSES = (
+    ('pending', 'Pending'),
+    ('under_review', 'Under Review'),
+    ('assigned', 'Assigned'),
+    ('under_investigation', 'Under Investigation'),
+    ('awaiting_magistrate', 'Awaiting Magistrate Approval'),
+    ('fir_registered', 'FIR Registered'),
+    ('gd_recorded', 'GD Recorded'),
+    ('resolved', 'Resolved'),
+)
+
+
 class Complaint(models.Model):
-    STATUS_CHOICES = (
-        ('pending', 'Pending'),
-        ('awaiting_magistrate', 'Awaiting Magistrate Approval'),
-        ('under_review', 'Under Review'),
-        ('fir_registered', 'FIR Registered'),
-        ('gd_recorded', 'GD Recorded'),
-        ('resolved', 'Resolved'),
-        ('under_investigation', 'Under Investigation'),
-    )
+    STATUS_CHOICES = CASE_STATUSES
 
     complaint_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey('User', on_delete=models.CASCADE)
@@ -102,7 +107,7 @@ class Complaint(models.Model):
     station = models.ForeignKey('police.PoliceStation', on_delete=models.PROTECT, blank=True, null=True, related_name='complaints')
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
-    # Incremented on each update to support optimistic locking (enforced in Phase 5).
+    # Incremented on every workflow change so a stale update can be refused (optimistic locking).
     version = models.PositiveIntegerField(default=1)
 
     objects = ActiveComplaintManager()

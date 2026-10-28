@@ -61,7 +61,7 @@ class PlatformTests(TestCase):
             "incident_date": "2026-01-01",
             "incident_time": "10:00:00",
         }
-        response = self.client.post("/api/v1/complaints/", payload, content_type=JSON, **auth_headers(citizen))
+        response = self.client.post("/api/v1/complaints/", payload, content_type=JSON, HTTP_IDEMPOTENCY_KEY="key-1", **auth_headers(citizen))
         self.assertEqual(response.status_code, 400)
         self.assertIn("case_type", response.json()["error"]["details"])
 
@@ -77,7 +77,7 @@ class PlatformTests(TestCase):
             "user_id": str(other.pk),
         }
         with patch("users.interactors.create_complaint.classify_incident", return_value=fake_classification()):
-            response = self.client.post("/api/v1/complaints/", payload, content_type=JSON, **auth_headers(citizen))
+            response = self.client.post("/api/v1/complaints/", payload, content_type=JSON, HTTP_IDEMPOTENCY_KEY="key-1", **auth_headers(citizen))
 
         self.assertEqual(response.status_code, 201)
         from users.models import Complaint

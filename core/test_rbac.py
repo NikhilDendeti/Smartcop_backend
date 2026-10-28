@@ -1,5 +1,6 @@
 """Role-based access control: every role against the endpoints it should and should not reach."""
 
+import uuid
 from unittest.mock import patch
 
 from django.core.cache import cache
@@ -43,7 +44,8 @@ class RBACTestCase(TestCase):
         return self.client.get(path, **(auth_headers(user) if user else {}))
 
     def post(self, user, path, body):
-        return self.client.post(path, body, content_type=JSON, **(auth_headers(user) if user else {}))
+        headers = {"HTTP_IDEMPOTENCY_KEY": uuid.uuid4().hex, **(auth_headers(user) if user else {})}
+        return self.client.post(path, body, content_type=JSON, **headers)
 
     def assign(self, commander, complaint=None, hc=None):
         return self.post(
@@ -198,7 +200,7 @@ class StatusAndInvestigationTests(RBACTestCase):
         )
 
     def test_commander_can_set_status_inside_their_station(self):
-        self.assertEqual(self.set_status(self.si, "resolved").status_code, 200)
+        self.assertEqual(self.set_status(self.si, "under_review").status_code, 200)
 
     def test_commander_cannot_set_status_in_another_station(self):
         self.assertEqual(self.set_status(self.si_b, "resolved").status_code, 404)

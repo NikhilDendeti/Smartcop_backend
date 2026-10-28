@@ -3,6 +3,7 @@
 Every endpoint requires a valid access token and a role. The acting user always comes from the
 token, never from the request body or URL."""
 
+from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
@@ -11,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from core import audit
+from core.idempotency import idempotent
 from core.pagination import StandardPagination
 from core.throttles import AIRateThrottle
 from users.access import complaints_for
@@ -82,6 +84,7 @@ def ai_assessment(request):
 @extend_schema(request=ComplaintCreateSerializer, tags=["complaints"])
 @api_view(["POST"])
 @permission_classes([IsCitizen])
+@idempotent
 def create_complaint(request):
     serializer = ComplaintCreateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -97,6 +100,7 @@ def create_complaint(request):
 @extend_schema(request=NonCognizableComplaintCreateSerializer, tags=["complaints"])
 @api_view(["POST"])
 @permission_classes([IsCitizen])
+@idempotent
 def create_non_cognizable_complaint(request):
     serializer = NonCognizableComplaintCreateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -117,6 +121,43 @@ def complaint_details(request, complaint_id):
 
     audit.record(request, "view", "complaint", complaint_id)
     return Response(GetComplaintDetailsInteractor(complaint_id).get_complaint_details())
+
+
+@extend_schema(tags=["notifications"])
+@api_view(["GET"])
+@permission_classes([IsAnyRole])
+def list_notifications(request):
+    notifications = request.user.notifications.order_by("-created_at")
+    if request.query_params.get("unread") == "true":
+        notifications = notifications.filter(read_at__isnull=True)
+
+    paginator = StandardPagination()
+    page = paginator.paginate_queryset(notifications, request)
+    return paginator.get_paginated_response(
+        [
+            {
+                "notification_id": str(item.notification_id),
+                "event": item.event,
+                "message": item.message,
+                "complaint_id": str(item.complaint_id) if item.complaint_id else None,
+                "read": item.read_at is not None,
+                "created_at": item.created_at.isoformat(),
+            }
+            for item in page
+        ]
+    )
+
+
+@extend_schema(tags=["notifications"])
+@api_view(["POST"])
+@permission_classes([IsAnyRole])
+def mark_notification_read(request, notification_id):
+    updated = request.user.notifications.filter(pk=notification_id, read_at__isnull=True).update(
+        read_at=timezone.now()
+    )
+    if not updated and not request.user.notifications.filter(pk=notification_id).exists():
+        raise NotFound("Notification not found.")
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @extend_schema(tags=["complaints"])

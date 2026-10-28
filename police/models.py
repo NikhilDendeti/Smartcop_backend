@@ -1,18 +1,9 @@
 from django.db import models
-from users.models import Complaint, User
+from users.models import CASE_STATUSES, Complaint, User
 import uuid
 
-# 🧭 Enum choices for progress tracking
-PROGRESS_STAGES = [
-    ("complaint_registered", "Complaint Registered"),
-    ("ai_draft_generated", "AI Draft Generated"),
-    ("assigned_to_officer", "Assigned to Officer"),
-    ("under_investigation", "Under Investigation"),
-    ("awaiting_magistrate_approval", "Awaiting Magistrate Approval"),
-    ("fir_registered", "FIR Registered"),
-    ("gd_recorded", "GD Recorded (Non-Cognizable)"),
-    ("closed_resolved", "Closed/Resolved"),
-]
+# Progress entries use the same states as Complaint.status; there is no separate stage list.
+PROGRESS_STAGES = CASE_STATUSES
 
 class PoliceStation(models.Model):
     station_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -100,6 +91,7 @@ class CaseProgress(models.Model):
     progress_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     complaint = models.ForeignKey('users.Complaint', on_delete=models.CASCADE, related_name="progress_updates")
     stage = models.CharField(max_length=50, choices=PROGRESS_STAGES)
+    previous_status = models.CharField(max_length=50, blank=True)
     updated_by = models.ForeignKey('users.User', on_delete=models.SET_NULL, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     remarks = models.TextField(blank=True, null=True)

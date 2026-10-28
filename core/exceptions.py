@@ -68,6 +68,9 @@ def api_exception_handler(exc, context):
     if isinstance(exc, APIException) or isinstance(exc, Http404):
         message = str(exc.detail) if isinstance(exc, APIException) else "Not found."
         code = STATUS_CODES.get(response.status_code, "error")
+        # Exceptions defined by this project name their own code (e.g. version_conflict).
+        if isinstance(exc, APIException) and not type(exc).__module__.startswith("rest_framework"):
+            code = exc.default_code
         return error_response(response.status_code, code, message)
 
     return response
