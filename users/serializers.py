@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from police.models import PoliceStation
-from users.models import CaseType, Evidence
+from users.models import CaseType, ConsentRecord, Evidence
 
 CASE_TYPE_NAMES = [choice[0] for choice in CaseType.CASE_TYPE_CHOICES]
 EVIDENCE_TYPES = [choice[0] for choice in Evidence.EVIDENCE_TYPE]
@@ -9,6 +9,12 @@ EVIDENCE_TYPES = [choice[0] for choice in Evidence.EVIDENCE_TYPE]
 
 class CaseTypeCreateSerializer(serializers.Serializer):
     name = serializers.ChoiceField(choices=CASE_TYPE_NAMES)
+
+
+class ConsentSerializer(serializers.Serializer):
+    purpose = serializers.ChoiceField(choices=[choice[0] for choice in ConsentRecord.PURPOSE_CHOICES])
+    policy_version = serializers.CharField(max_length=20)
+    granted = serializers.BooleanField()
 
 
 class CurrentAddressSerializer(serializers.Serializer):

@@ -1,14 +1,17 @@
 import datetime
+from io import StringIO
 
 from django.test import SimpleTestCase
+from django.utils import timezone
 
+from ai.assessment import run_assessment
 from ai.classification import act_for, classify_incident
 from ai.guards import MAX_INCIDENT_CHARS, safety_floor, sanitize_incident, wrap_incident
 from ai.models import AIRun, LegalSection, PromptVersion
 from ai.providers.base import ProviderUnavailable
 from ai.schemas import SectionOut
 from ai.testing import GOOD_OUTPUT, AITestCase
-from core.testing import make_user
+from core.testing import grant_consent, make_user
 from users.models import AIAssessment
 from users.utils.ai_predictor import get_ai_assessment
 
@@ -176,9 +179,13 @@ class UnavailableTests(AITestCase):
 
 
 class ComplaintIntegrationTests(AITestCase):
-    def file(self, **overrides):
+    def file(self, citizen=None, consent=True, **overrides):
+        """File a complaint and run the background analysis that follows the commit."""
         from users.interactors.create_complaint import CreateComplaintInteractor
 
+        citizen = citizen or make_user()
+        if consent:
+            grant_consent(citizen)
         data = {
             "case_type": "theft",
             "incident_summary": "Someone stole my bike",
@@ -187,7 +194,22 @@ class ComplaintIntegrationTests(AITestCase):
             "incident_time": datetime.time(10, 0),
             **overrides,
         }
-        return CreateComplaintInteractor(data=data, user=make_user()).execute()
+        with self.captureOnCommitCallbacks(execute=True):
+            complaint = CreateComplaintInteractor(data=data, user=citizen).execute()
+        complaint.refresh_from_db()
+        return complaint
+
+    def test_a_new_complaint_is_filed_with_a_visible_pending_assessment(self):
+        from users.interactors.create_complaint import CreateComplaintInteractor
+
+        complaint = CreateComplaintInteractor(
+            data={"case_type": "theft", "incident_summary": "x", "location": "y", "incident_date": OLD,
+                  "incident_time": datetime.time(10, 0)},
+            user=make_user(),
+        ).execute()
+
+        assessment = AIAssessment.objects.get(complaint=complaint)
+        self.assertEqual((assessment.ai_status, assessment.needs_review), ("pending", True))
 
     def test_assessment_records_provider_model_and_links_the_runs(self):
         self.install("openai", GOOD_OUTPUT)
@@ -198,6 +220,7 @@ class ComplaintIntegrationTests(AITestCase):
         self.assertEqual(assessment.prompt_version, "builtin-1")
         self.assertEqual(assessment.ai_run.complaint, complaint)
         self.assertEqual(complaint.ai_urgency_score, 60)
+        self.assertTrue(assessment.review_reasons)
 
     def test_complaint_is_still_filed_when_the_ai_is_down(self):
         self.configure(kill_switch=True)
@@ -209,3 +232,68 @@ class ComplaintIntegrationTests(AITestCase):
         self.assertEqual(assessment.ipc_sections, {})
         self.assertEqual(complaint.status, "pending")
         self.assertEqual(complaint.ai_urgency_score, 0)
+
+    def test_without_consent_the_ai_never_sees_the_complaint(self):
+        provider = self.install("openai", GOOD_OUTPUT)
+        complaint = self.file(consent=False, incident_summary="He stabbed my brother")
+
+        assessment = AIAssessment.objects.get(complaint=complaint)
+        self.assertEqual(assessment.ai_status, "skipped")
+        self.assertEqual(len(provider.calls), 0)
+        self.assertGreaterEqual(complaint.ai_urgency_score, 90)  # the keyword floor still protects the case
+
+    def test_revoking_consent_stops_analysis(self):
+        citizen = make_user()
+        record = grant_consent(citizen)
+        record.revoked_at = timezone.now()
+        record.save()
+        self.install("openai", GOOD_OUTPUT)
+
+        complaint = self.file(citizen=citizen, consent=False)
+        self.assertEqual(AIAssessment.objects.get(complaint=complaint).ai_status, "skipped")
+
+    def test_analysis_runs_once_even_if_queued_twice(self):
+        provider = self.install("openai", GOOD_OUTPUT)
+        complaint = self.file()
+        calls = len(provider.calls)
+
+        self.assertEqual(run_assessment(complaint.pk), "nothing_to_do")
+        self.assertEqual(len(provider.calls), calls)
+
+    def test_a_non_cognizable_entry_keeps_zero_urgency(self):
+        from users.interactors.create_non_cognizable_complaint import CreateNonCognizableComplaintInteractor
+
+        self.install("openai", GOOD_OUTPUT)
+        citizen = make_user()
+        grant_consent(citizen)
+        data = {"user_id": citizen.pk, "case_type": "theft", "incident_summary": "Someone stole my bike",
+                "incident_date": OLD, "incident_time": datetime.time(10, 0), "location": "Market"}
+        with self.captureOnCommitCallbacks(execute=True):
+            result = CreateNonCognizableComplaintInteractor(data=data).create()
+
+        self.assertEqual(result["ai_status"], "pending")
+        assessment = AIAssessment.objects.get(complaint_id=result["complaint_id"])
+        self.assertEqual(assessment.urgency_score, 0)
+        self.assertEqual(assessment.ipc_sections, {"379": "Theft"})
+
+    def test_a_queue_failure_does_not_stop_the_complaint_being_filed(self):
+        from unittest.mock import patch
+
+        with patch("ai.tasks.assess_complaint.delay", side_effect=ConnectionError("queue down")):
+            complaint = self.file()
+
+        self.assertEqual(AIAssessment.objects.get(complaint=complaint).ai_status, "pending")
+
+    def test_reassess_pending_picks_up_stuck_assessments(self):
+        from unittest.mock import patch
+
+        from django.core.management import call_command
+
+        with patch("ai.tasks.assess_complaint.delay", side_effect=ConnectionError("queue down")):
+            complaint = self.file()
+        AIAssessment.objects.update(generated_at=timezone.now() - datetime.timedelta(minutes=30))
+
+        self.install("openai", GOOD_OUTPUT)
+        call_command("reassess_pending", stdout=StringIO())
+
+        self.assertNotEqual(AIAssessment.objects.get(complaint=complaint).ai_status, "pending")

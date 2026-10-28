@@ -27,20 +27,28 @@ class FakeProvider(LLMProvider):
         return LLMResponse(data=outcome, provider=self.name, model=model, input_tokens=10, output_tokens=5)
 
 
-@override_settings(AI_BACKOFF_BASE_SECONDS=0)
-class AITestCase(TestCase):
+def _clear_cache():
+    try:
+        cache.clear()
+    except Exception:  # a test may deliberately run with a broken cache
+        pass
+
+
+class ProviderIsolationMixin:
     """Isolates provider registration, the circuit breaker and the AI configuration per test."""
 
     def setUp(self):
-        cache.clear()
+        _clear_cache()
         self._factories = dict(registry._factories)
         registry.reset_providers()
+        super().setUp()
 
     def tearDown(self):
+        super().tearDown()
         registry._factories.clear()
         registry._factories.update(self._factories)
         registry.reset_providers()
-        cache.clear()
+        _clear_cache()
 
     def install(self, name, *outcomes):
         provider = FakeProvider(name, outcomes)
@@ -53,3 +61,8 @@ class AITestCase(TestCase):
             setattr(config, key, value)
         config.save()
         return config
+
+
+@override_settings(AI_BACKOFF_BASE_SECONDS=0)
+class AITestCase(ProviderIsolationMixin, TestCase):
+    pass

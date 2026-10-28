@@ -42,7 +42,7 @@ class Command(BaseCommand):
             with open(csv_path, newline="", encoding="utf-8-sig") as handle:
                 rows = list(csv.DictReader(handle))
         except OSError as error:
-            raise CommandError(str(error))
+            raise CommandError(str(error)) from error
 
         missing = [column for column in COLUMNS if rows and column not in rows[0]]
         if missing:

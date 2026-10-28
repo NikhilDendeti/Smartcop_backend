@@ -1,9 +1,9 @@
-from django.db import models
-from django.utils import timezone
 import uuid
 
-from core.fields import EncryptedTextField, blind_index
+from django.db import models
+from django.utils import timezone
 
+from core.fields import EncryptedTextField, blind_index
 
 
 class User(models.Model):
@@ -15,7 +15,7 @@ class User(models.Model):
     )
 
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    otp = models.IntegerField(blank=True, null=True) 
+    otp = models.IntegerField(blank=True, null=True)
     name = models.CharField(max_length=100)
     gender = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')], blank=True, null=True)
     dob = models.DateField()
@@ -155,7 +155,7 @@ class Accused(models.Model):
     video_url = models.TextField(blank=True, null=True)
 
 
-    
+
 class Witness(models.Model):
     witness_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     complaint = models.ForeignKey(Complaint, on_delete=models.CASCADE, related_name='witnesses')
@@ -182,11 +182,20 @@ class AIAssessment(models.Model):
     confidence = models.FloatField(blank=True, null=True)
     needs_review = models.BooleanField(default=False)
     # "unavailable" means no model could answer, so the sections and score are empty, not guessed.
+    # "pending": queued for analysis. "skipped": the citizen has not consented to AI analysis.
     ai_status = models.CharField(
         max_length=15,
-        choices=(('ok', 'OK'), ('needs_review', 'Needs review'), ('unavailable', 'AI unavailable')),
+        choices=(
+            ('pending', 'Pending'),
+            ('ok', 'OK'),
+            ('needs_review', 'Needs review'),
+            ('unavailable', 'AI unavailable'),
+            ('skipped', 'Skipped'),
+        ),
         default='needs_review',
     )
+    # Why the AI result was flagged, shown to the officer reviewing it.
+    review_reasons = models.JSONField(default=list, blank=True)
     reviewed_by = models.ForeignKey('User', on_delete=models.SET_NULL, blank=True, null=True, related_name='reviewed_assessments')
     reviewed_at = models.DateTimeField(blank=True, null=True)
     ai_run = models.ForeignKey('ai.AIRun', on_delete=models.SET_NULL, blank=True, null=True, related_name='assessments')
@@ -287,6 +296,8 @@ class EvidenceFile(models.Model):
     size_bytes = models.BigIntegerField()
     sha256 = models.CharField(max_length=64)
     scan_status = models.CharField(max_length=10, choices=SCAN_STATUS, default='pending')
+    # Set once the stored bytes were read back and matched the declared size and hash.
+    verified_at = models.DateTimeField(blank=True, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -332,6 +343,8 @@ class Message(models.Model):
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     content = models.TextField()
+    # Structured output that came with an assistant message, such as the draft complaint report.
+    data = models.JSONField(default=dict, blank=True)
     ai_run = models.ForeignKey('ai.AIRun', on_delete=models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

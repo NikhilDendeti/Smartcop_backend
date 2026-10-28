@@ -1,0 +1,82 @@
+# Example Prometheus alert rules for SmartCop. They use the gauges served at /metrics/ and the
+# probes at /health/ and /ready/. Thresholds are starting points: tune them against real traffic.
+# Not loaded or tested anywhere yet; load them into your Prometheus (or translate to your tool).
+groups:
+  - name: smartcop-availability
+    rules:
+      - alert: ApiNotReady
+        expr: probe_success{job="smartcop-ready"} == 0
+        for: 2m
+        labels: {severity: page}
+        annotations:
+          summary: "SmartCop /ready/ is failing (database or cache unreachable)"
+          runbook: "docs/RUNBOOK.md#api-not-ready"
+
+  - name: smartcop-ai
+    rules:
+      - alert: AIKillSwitchOn
+        expr: smartcop_ai_kill_switch == 1
+        for: 5m
+        labels: {severity: warn}
+        annotations:
+          summary: "The AI kill switch is on; every complaint is going to manual triage"
+          runbook: "docs/RUNBOOK.md#ai-kill-switch"
+
+      - alert: AIHighFailureRate
+        expr: |
+          sum(smartcop_ai_calls_last_hour{status!="success"})
+            / clamp_min(sum(smartcop_ai_calls_last_hour), 1) > 0.2
+        for: 10m
+        labels: {severity: page}
+        annotations:
+          summary: "More than 20% of model calls failed in the last hour"
+          runbook: "docs/RUNBOOK.md#ai-failures"
+
+      - alert: AIFallbackInUse
+        expr: smartcop_ai_fallback_calls_last_hour > 10
+        for: 15m
+        labels: {severity: warn}
+        annotations:
+          summary: "The fallback provider is serving traffic; the main provider is struggling"
+          runbook: "docs/RUNBOOK.md#ai-failures"
+
+      - alert: AIBudgetNearlySpent
+        expr: smartcop_ai_budget_used_ratio >= 0.8
+        for: 5m
+        labels: {severity: warn}
+        annotations:
+          summary: "80% of the monthly AI budget is spent; AI stops at 100%"
+          runbook: "docs/RUNBOOK.md#ai-budget"
+
+      - alert: AIAnalysisBacklog
+        expr: smartcop_ai_pending_oldest_age_seconds > 600
+        for: 5m
+        labels: {severity: page}
+        annotations:
+          summary: "A complaint has waited over 10 minutes for AI analysis (worker down or queue stuck)"
+          runbook: "docs/RUNBOOK.md#analysis-backlog"
+
+      - alert: AIReviewQueueGrowing
+        expr: smartcop_ai_review_queue_size > 100
+        for: 1h
+        labels: {severity: warn}
+        annotations:
+          summary: "Over 100 AI results are waiting for an officer to review"
+
+  - name: smartcop-security
+    rules:
+      - alert: ManyAccessDenied
+        expr: smartcop_security_events_last_hour{event="access_denied"} > 50
+        for: 10m
+        labels: {severity: warn}
+        annotations:
+          summary: "Unusually many forbidden requests; someone may be probing"
+          runbook: "docs/RUNBOOK.md#security-events"
+
+      - alert: ManyFailedLogins
+        expr: smartcop_security_events_last_hour{event="login_failed"} > 100
+        for: 10m
+        labels: {severity: page}
+        annotations:
+          summary: "Unusually many failed logins; possible guessing attack"
+          runbook: "docs/RUNBOOK.md#security-events"

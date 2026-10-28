@@ -1,0 +1,31 @@
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+extend-exclude = ["migrations", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = [
+    "E501",   # long lines: formatter's job, and test strings are long
+    "B008",
+    "UP038",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# The legacy modules predate these rules and are being retired.
+"users/views.py" = ["F401", "F403", "F405", "I001", "E401", "E701", "W291", "W293", "W292"]
+"police/views.py" = ["F401", "F403", "F405", "I001", "E401", "E701", "W291", "W293", "W292", "F841"]
+"police/urls.py" = ["F401", "F403", "F405", "I001"]
+"Smartcop_backend/urls.py" = ["F401", "F403", "F405"]
+"police/models.py" = ["F401"]
+"police/interactors/*" = ["F401", "F403", "F405", "I001", "B904", "F841"]
+"users/interactors/*" = ["F401", "F403", "F405", "I001"]
+"*/admin.py" = ["I001"]
+"Smartcop_backend/settings/*.py" = ["F401", "F403", "F405"]
+"**/test_*.py" = ["B017", "B018", "B007", "F841"]
+"**/tests.py" = ["B017", "B018", "F841"]
+
+[tool.black]
+line-length = 120
+target-version = ["py313"]
+extend-exclude = "migrations"

@@ -3,6 +3,8 @@
 import datetime
 import itertools
 
+from django.core.cache.backends.base import BaseCache
+
 from police.models import OfficerRole, PoliceStation
 from users.authn.tokens import issue_token_pair
 from users.models import CaseType, Complaint, User
@@ -40,6 +42,24 @@ def make_complaint(user, station=None, status="pending"):
         location="Market",
         incident_summary="Bike stolen",
     )
+
+
+class BrokenCache(BaseCache):
+    """A cache backend that is down: every operation fails, as with an unreachable Redis."""
+
+    def __init__(self, location, params):
+        super().__init__(params)
+
+    def _down(self, *args, **kwargs):
+        raise ConnectionError("cache is down")
+
+    add = get = set = touch = delete = incr = decr = has_key = clear = get_many = set_many = _down
+
+
+def grant_consent(user, purpose="ai_processing"):
+    from users.models import ConsentRecord
+
+    return ConsentRecord.objects.create(user=user, purpose=purpose, policy_version="test")
 
 
 def fake_classification(**overrides):

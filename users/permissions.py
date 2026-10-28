@@ -27,6 +27,8 @@ IsOfficer = roles("IsOfficer", *access.OFFICER_ROLES)
 IsCommander = roles("IsCommander", *access.COMMAND_ROLES)
 IsMagistrate = roles("IsMagistrate", access.MAGISTRATE)
 IsCaseParticipant = roles("IsCaseParticipant", *access.OFFICER_ROLES, access.MAGISTRATE)
+IsEvidenceUploader = roles("IsEvidenceUploader", access.CITIZEN, *access.OFFICER_ROLES)
+IsEvidenceReader = roles("IsEvidenceReader", access.CITIZEN, *access.OFFICER_ROLES, access.MAGISTRATE)
 IsAnyRole = roles(
     "IsAnyRole", access.CITIZEN, *access.OFFICER_ROLES, access.MAGISTRATE, access.ADMIN
 )

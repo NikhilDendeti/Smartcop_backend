@@ -1,7 +1,7 @@
 from django.db import transaction
 
-from ai.classification import classify_incident
-from ai.services import save_assessment
+from ai.assessment import enqueue_assessment
+from ai.services import create_pending_assessment
 from police.models import CaseProgress
 from users.models import Complaint, Evidence, Accused, Witness, CaseType
 
@@ -20,12 +20,9 @@ class CreateComplaintInteractor:
 
         case_type_obj = CaseType.objects.get(name=case_type_name)
 
-        # The model call happens before the transaction so no database lock is held while waiting.
-        # If the AI is unavailable the complaint is still filed, flagged for manual triage.
-        ai_result = classify_incident(incident_summary, incident_date)
-        ai_score = ai_result.urgency_score or 0
-
-        # Everything below is saved together or not at all.
+        # Everything below is saved together or not at all. The AI analysis runs in the background
+        # after the commit; until then the complaint carries a visible "pending" assessment, and if
+        # the AI is down it is flagged for manual triage instead.
         with transaction.atomic():
             complaint = Complaint.objects.create(
                 user=self.user,
@@ -35,11 +32,10 @@ class CreateComplaintInteractor:
                 incident_time=incident_time,
                 location=location,
                 incident_summary=incident_summary,
-                ai_urgency_score=ai_score,
                 station=self.data.get("station")
             )
 
-            save_assessment(complaint, ai_result)
+            create_pending_assessment(complaint)
             CaseProgress.objects.create(
                 complaint=complaint, stage=complaint.status, updated_by=self.user, remarks="Complaint registered"
             )
@@ -67,5 +63,7 @@ class CreateComplaintInteractor:
                     file_url=ev.get("file_url"),
                     type=ev.get("type")
                 )
+
+            transaction.on_commit(lambda: enqueue_assessment(complaint.pk))
 
         return complaint

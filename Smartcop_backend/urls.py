@@ -3,11 +3,12 @@ from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
-from core.views import health, ready
+from core.views import health, metrics, ready
 from users.views import *  # noqa: F401,F403  (legacy, unversioned routes below)
 
 api_v1 = [
     path("police/", include("police.api_urls")),
+    path("", include("ai.api_urls")),
     path("", include("users.api_urls")),
 ]
 
@@ -15,6 +16,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("health/", health),
     path("ready/", ready),
+    path("metrics/", metrics),
     path("api/v1/", include(api_v1)),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema")),

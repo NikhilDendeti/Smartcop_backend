@@ -27,3 +27,10 @@ db.sqlite3
 # VSCode or PyCharm
 .vscode/
 .idea/
+
+# Uploaded evidence (local storage backend)
+evidence_store/
+
+# Test coverage output
+.coverage
+htmlcov/

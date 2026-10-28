@@ -48,6 +48,31 @@ class MagistrateDecisionSerializer(serializers.Serializer):
     comments = serializers.CharField(required=False, allow_blank=True, default="", max_length=2000)
 
 
+class AIReviewSerializer(serializers.Serializer):
+    decision = serializers.ChoiceField(choices=["accepted", "edited", "rejected"])
+    sections = serializers.DictField(child=serializers.CharField(max_length=300), required=False)
+    is_cognizable = serializers.BooleanField(required=False)
+    urgency_score = serializers.IntegerField(required=False, min_value=0, max_value=100)
+    notes = serializers.CharField(required=False, allow_blank=True, default="", max_length=2000)
+
+    def validate_sections(self, value):
+        from ai.schemas import SECTION_CODE
+
+        bad = [code for code in value if not SECTION_CODE.match(code)]
+        if bad:
+            raise serializers.ValidationError(f"Not section numbers: {', '.join(bad)}")
+        return value
+
+    def validate(self, attrs):
+        if attrs["decision"] == "edited" and not attrs.get("sections"):
+            raise serializers.ValidationError({"sections": "Give the corrected sections when editing."})
+        return attrs
+
+
+class AIDraftSerializer(serializers.Serializer):
+    document_type = serializers.ChoiceField(choices=["fir", "gd"])
+
+
 class DraftCreateSerializer(serializers.Serializer):
     document_type = serializers.ChoiceField(choices=["fir", "gd"])
     content = serializers.CharField(max_length=20000)

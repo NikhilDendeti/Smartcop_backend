@@ -14,12 +14,12 @@ from users.interactors.create_non_cognizable_complaint import CreateNonCognizabl
 from users.interactors.get_user_complaints import GetUserComplaintsInteractor
 from users.interactors.get_complaint_details import GetComplaintDetailsInteractor
 
-@api_view(['POST'])  
-@authentication_classes([]) 
+@api_view(['POST'])
+@authentication_classes([])
 @permission_classes([])
 def get_user_details(request):
     phone_number = request.data.get('phone_number')
-    
+
     if not phone_number:
         return Response({"error": "Phone number is required"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -71,7 +71,7 @@ def update_current_address_view(request):
         return Response(result, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
-@authentication_classes([])  
+@authentication_classes([])
 @permission_classes([])
 def ai_assessment_view(request):
     incident_summary = request.data.get("incident_summary")
@@ -83,12 +83,12 @@ def ai_assessment_view(request):
         result = get_ai_assessment(incident_summary)
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
 @api_view(["POST"])
-@authentication_classes([]) 
+@authentication_classes([])
 @permission_classes([])
 def create_complaint_view(request):
     try:
@@ -111,7 +111,7 @@ def create_complaint_view(request):
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
-@authentication_classes([])  
+@authentication_classes([])
 @permission_classes([])
 def get_complaint_details_view(request, complaint_id):
     interactor = GetComplaintDetailsInteractor(complaint_id)

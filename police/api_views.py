@@ -5,18 +5,21 @@ only ever reaches complaints in their scope. Out-of-scope complaints answer 404,
 changes always go through police.workflow, which enforces who may move a case where."""
 
 from drf_spectacular.utils import extend_schema
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 
+from ai.agents import drafter, summarizer
 from core import audit
 from core.pagination import StandardPagination
-from police import cases, workflow
+from core.throttles import AIRateThrottle
+from police import cases, triage, workflow
 from police.interactors.get_complaint_details import GetComplaintDetailsInteractor
 from police.interactors.list_all_complaints import ListAllComplaintsInteractor
 from police.interactors.list_head_constables import ListHeadConstablesInteractor
-from police.models import FIRDraft
 from police.serializers import (
+    AIDraftSerializer,
+    AIReviewSerializer,
     AssignComplaintSerializer,
     ComplaintListQuerySerializer,
     DraftCreateSerializer,
@@ -27,7 +30,7 @@ from police.serializers import (
     NoteSerializer,
     UpdateStatusSerializer,
 )
-from users.access import COMMAND_ROLES, OFFICER_ROLES, actor_role, complaints_for, officer_profile
+from users.access import OFFICER_ROLES, actor_role, complaints_for, officer_profile
 from users.permissions import IsCaseParticipant, IsCommander, IsMagistrate, IsOfficer
 
 
@@ -276,6 +279,85 @@ def complaint_drafts(request, complaint_id):
         return Response(_draft_row(draft), status=201)
 
     return Response([_draft_row(item) for item in complaint.fir_drafts.order_by("document_type", "version")])
+
+
+@extend_schema(tags=["police"])
+@api_view(["GET"])
+@permission_classes([IsCommander])
+def triage_suggestion(request, complaint_id):
+    complaint = _scoped(request.user, complaint_id)
+    return Response(triage.suggest(complaint))
+
+
+@extend_schema(request=AIDraftSerializer, tags=["police", "ai"])
+@api_view(["POST"])
+@permission_classes([IsOfficer])
+@throttle_classes([AIRateThrottle])
+def ai_draft(request, complaint_id):
+    serializer = AIDraftSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    complaint = _scoped(request.user, complaint_id)
+
+    draft = drafter.draft_document(complaint, request.user, serializer.validated_data["document_type"])
+    audit.record(request, "create_ai_draft", "complaint", complaint.pk, metadata={"version": draft.version})
+    return Response(_draft_row(draft), status=201)
+
+
+@extend_schema(tags=["police", "ai"])
+@api_view(["POST"])
+@permission_classes([IsCaseParticipant])
+@throttle_classes([AIRateThrottle])
+def case_summary(request, complaint_id):
+    complaint = _scoped(request.user, complaint_id)
+    result = summarizer.summarize_case(complaint)
+    audit.record(request, "summarize", "complaint", complaint.pk)
+    return Response(result)
+
+
+@extend_schema(tags=["police", "ai"])
+@api_view(["GET"])
+@permission_classes([IsOfficer])
+def ai_review_queue(request):
+    queue = (
+        complaints_for(request.user)
+        .filter(assessment__needs_review=True, assessment__reviewed_at__isnull=True)
+        .exclude(assessment__ai_status="pending")
+        .select_related("assessment", "case_type")
+        .order_by("-ai_urgency_score", "created_at")
+    )
+    paginator = StandardPagination()
+    page = paginator.paginate_queryset(queue, request)
+    return paginator.get_paginated_response(
+        [
+            {
+                "complaint_id": str(item.pk),
+                "case_type": item.case_type.name,
+                "ai_status": item.assessment.ai_status,
+                "urgency_score": item.assessment.urgency_score,
+                "sections": item.assessment.ipc_sections,
+                "reasons": item.assessment.review_reasons,
+                "created_at": item.created_at.isoformat(),
+            }
+            for item in page
+        ]
+    )
+
+
+@extend_schema(request=AIReviewSerializer, tags=["police", "ai"])
+@api_view(["POST"])
+@permission_classes([IsOfficer])
+def ai_review(request, complaint_id):
+    serializer = AIReviewSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.validated_data
+    complaint = _scoped(request.user, complaint_id)
+
+    cases.review_assessment(
+        complaint, request.user, data["decision"], sections=data.get("sections"),
+        is_cognizable=data.get("is_cognizable"), urgency_score=data.get("urgency_score"), notes=data["notes"],
+    )
+    audit.record(request, "ai_review", "complaint", complaint.pk, metadata={"decision": data["decision"]})
+    return Response({"complaint_id": str(complaint.pk), "decision": data["decision"]})
 
 
 @extend_schema(tags=["police"])

@@ -20,6 +20,10 @@ class AIConfig(models.Model):
     timeout_seconds = models.PositiveSmallIntegerField(default=20)
     max_retries = models.PositiveSmallIntegerField(default=2)
     monthly_budget_usd = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    # Rollout aid: send this share of requests to a candidate provider first, falling back to the
+    # normal chain if it fails. Used to canary a new provider or model before switching over.
+    canary_provider = models.CharField(max_length=20, choices=PROVIDER_CHOICES, blank=True)
+    canary_percent = models.PositiveSmallIntegerField(default=0)
     # When on, no model is called and complaints go straight to manual triage.
     kill_switch = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)

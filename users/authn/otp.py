@@ -1,4 +1,5 @@
 import hmac
+import logging
 import secrets
 from datetime import timedelta
 from hashlib import sha256
@@ -9,8 +10,11 @@ from django.db.models import F
 from django.utils import timezone
 from rest_framework.exceptions import APIException, AuthenticationFailed, Throttled
 
+from core.exceptions import ServiceUnavailable
 from core.sms import SMSError, get_sms_backend
 from users.models import OTPChallenge, User
+
+logger = logging.getLogger(__name__)
 
 INVALID_CODE = "The code is invalid or has expired."
 
@@ -35,7 +39,13 @@ def request_otp(phone):
     """Send a login code if the number belongs to a user. The caller gets the same answer either
     way, so the endpoint cannot be used to discover which numbers are registered."""
     cooldown_key = f"otp-cooldown:{phone}"
-    if not cache.add(cooldown_key, 1, settings.OTP_RESEND_COOLDOWN_SECONDS):
+    try:
+        fresh = cache.add(cooldown_key, 1, settings.OTP_RESEND_COOLDOWN_SECONDS)
+    except Exception:
+        # Without the cache the resend limit cannot be enforced, so refuse rather than allow floods of SMS.
+        logger.exception("OTP cooldown cache unavailable")
+        raise ServiceUnavailable() from None
+    if not fresh:
         raise Throttled(wait=settings.OTP_RESEND_COOLDOWN_SECONDS)
 
     if not User.objects.filter(phone=phone).exists():
@@ -57,7 +67,7 @@ def request_otp(phone):
     except SMSError:
         challenge.delete()
         cache.delete(cooldown_key)
-        raise SMSUnavailable()
+        raise SMSUnavailable() from None
 
 
 def verify_otp(phone, code):

@@ -31,7 +31,7 @@ class JWTAuthentication(BaseAuthentication):
         try:
             user = User.objects.get(pk=claims["sub"])
         except (User.DoesNotExist, ValueError):
-            raise AuthenticationFailed(INVALID)
+            raise AuthenticationFailed(INVALID) from None
         return user, claims
 
     def authenticate_header(self, request):

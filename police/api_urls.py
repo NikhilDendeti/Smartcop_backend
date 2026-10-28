@@ -16,4 +16,9 @@ urlpatterns = [
     path("complaints/<uuid:complaint_id>/magistrate-decision/", api_views.magistrate_decision),
     path("complaints/<uuid:complaint_id>/drafts/", api_views.complaint_drafts),
     path("complaints/<uuid:complaint_id>/drafts/<uuid:draft_id>/approve/", api_views.approve_draft),
+    path("complaints/<uuid:complaint_id>/drafts/ai/", api_views.ai_draft),
+    path("complaints/<uuid:complaint_id>/triage/", api_views.triage_suggestion),
+    path("complaints/<uuid:complaint_id>/summary/", api_views.case_summary),
+    path("complaints/<uuid:complaint_id>/ai-review/", api_views.ai_review),
+    path("ai-review-queue/", api_views.ai_review_queue),
 ]

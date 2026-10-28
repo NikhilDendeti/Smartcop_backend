@@ -8,8 +8,9 @@ a guessed answer."""
 import logging
 import random
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 from django.conf import settings
 from django.db.models import Sum
@@ -104,6 +105,14 @@ def run_structured(request: LLMRequest, validate: Callable[[dict], Any], *, prom
         raise AIUnavailable("budget_exceeded")
 
     chain = [name for name in dict.fromkeys([config.provider, config.fallback_provider]) if name]
+    if (
+        config.canary_provider
+        and config.canary_percent
+        and config.canary_provider != config.provider
+        and random.uniform(0, 100) < config.canary_percent
+    ):
+        # A share of requests tries the candidate first; if it fails they continue down the normal chain.
+        chain = list(dict.fromkeys([config.canary_provider, *chain]))
     deadline = time.monotonic() + settings.AI_TOTAL_DEADLINE_SECONDS
     run_ids = []
     failed_provider = ""

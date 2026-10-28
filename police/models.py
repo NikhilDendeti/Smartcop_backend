@@ -1,6 +1,8 @@
-from django.db import models
-from users.models import CASE_STATUSES, Complaint, User
 import uuid
+
+from django.db import models
+
+from users.models import CASE_STATUSES, Complaint, User
 
 # Progress entries use the same states as Complaint.status; there is no separate stage list.
 PROGRESS_STAGES = CASE_STATUSES

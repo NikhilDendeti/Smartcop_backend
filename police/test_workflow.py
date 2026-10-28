@@ -1,5 +1,4 @@
 import datetime
-import uuid
 from unittest.mock import patch
 
 from django.db import connection
@@ -281,7 +280,7 @@ class CreationTests(WorkflowTestCase):
         headers = auth_headers(user or self.citizen)
         if key is not None:
             headers["HTTP_IDEMPOTENCY_KEY"] = key
-        with patch("users.interactors.create_complaint.classify_incident", return_value=fake_classification()):
+        with patch("ai.assessment.classify_incident", return_value=fake_classification()):
             return self.client.post("/api/v1/complaints/", body or self.BODY, content_type=JSON, **headers)
 
     def test_a_retry_with_the_same_key_creates_nothing_new(self):
@@ -318,7 +317,7 @@ class CreationTests(WorkflowTestCase):
                 "witnesses": [{"name": "W"}]}
         before = (Complaint.objects.count(), AIAssessment.objects.count(), CaseProgress.objects.count())
 
-        with patch("users.interactors.create_complaint.classify_incident", return_value=fake_classification()), \
+        with patch("ai.assessment.classify_incident", return_value=fake_classification()), \
                 patch("users.interactors.create_complaint.Witness.objects.create", side_effect=RuntimeError("boom")):
             with self.assertRaises(RuntimeError):
                 CreateComplaintInteractor(data=data, user=self.citizen).execute()

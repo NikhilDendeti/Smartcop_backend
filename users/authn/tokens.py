@@ -26,9 +26,9 @@ def decode_token(token, expected_type):
             options={"require": ["exp", "iat", "sub", "jti"]},
         )
     except jwt.ExpiredSignatureError:
-        raise AuthenticationFailed("Token has expired.")
+        raise AuthenticationFailed("Token has expired.") from None
     except jwt.InvalidTokenError:
-        raise AuthenticationFailed(INVALID)
+        raise AuthenticationFailed(INVALID) from None
     if claims.get("type") != expected_type:
         raise AuthenticationFailed(INVALID)
     return claims

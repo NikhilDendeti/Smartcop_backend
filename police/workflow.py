@@ -2,8 +2,8 @@
 true first. Every change goes through apply_transition(), which locks the complaint, checks the
 rules, bumps its version and writes the CaseProgress timeline entry in one transaction."""
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Optional
 
 from django.db import transaction
 from rest_framework.exceptions import APIException, PermissionDenied
@@ -33,7 +33,7 @@ class Rule:
     # Roles that may trigger the change. An empty tuple means only the system may (for example,
     # a magistrate's decision moves the case; nobody can just type the new status).
     roles: tuple
-    check: Optional[Callable[[Complaint, str], Optional[str]]] = None
+    check: Callable[[Complaint, str], str | None] | None = None
 
 
 def _investigation_allowed(complaint, remarks):

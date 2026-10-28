@@ -1,0 +1,21 @@
+[run]
+source = .
+branch = True
+omit =
+    */migrations/*
+    */tests.py
+    */test_*.py
+    */testing.py
+    manage.py
+    scripts/*
+    loadtests/*
+    Smartcop_backend/wsgi.py
+    Smartcop_backend/asgi.py
+    Smartcop_backend/settings/prod.py
+
+[report]
+show_missing = False
+skip_empty = True
+exclude_lines =
+    pragma: no cover
+    raise NotImplementedError

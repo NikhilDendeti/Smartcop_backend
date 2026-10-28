@@ -61,7 +61,6 @@ class GetComplaintDetailsInteractor:
 
         return {
             **extra,
-            "status": "success",
             "complaint_id": str(complaint.complaint_id),
             "user": {
                 "name": complaint.user.name,

@@ -1,0 +1,43 @@
+name: AI evaluation
+
+# Scores the AI layer on the labelled cases with real model calls (billable), one provider at a time.
+# Run it by hand before changing a prompt, a model or the provider, and attach the report to the change.
+on:
+  workflow_dispatch:
+    inputs:
+      providers:
+        description: "Comma-separated providers to compare"
+        default: "openai,anthropic"
+      enforce_gates:
+        description: "Fail the run if a quality gate is missed"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    env:
+      SECRET_KEY: ci-only-not-a-secret
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      AI_PRICING_JSON: ${{ vars.AI_PRICING_JSON || '{}' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python manage.py migrate --noinput
+      - name: Run the evaluation
+        run: |
+          python manage.py run_ai_eval --providers "${{ inputs.providers }}" --out ai-eval-report.json \
+            ${{ inputs.enforce_gates && ' ' || '--no-gate' }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ai-eval-report
+          path: ai-eval-report.json

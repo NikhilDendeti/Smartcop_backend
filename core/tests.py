@@ -76,7 +76,7 @@ class PlatformTests(TestCase):
             "incident_time": "10:00:00",
             "user_id": str(other.pk),
         }
-        with patch("users.interactors.create_complaint.classify_incident", return_value=fake_classification()):
+        with patch("ai.assessment.classify_incident", return_value=fake_classification()):
             response = self.client.post("/api/v1/complaints/", payload, content_type=JSON, HTTP_IDEMPOTENCY_KEY="key-1", **auth_headers(citizen))
 
         self.assertEqual(response.status_code, 201)

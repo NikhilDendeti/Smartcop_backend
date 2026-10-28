@@ -157,13 +157,48 @@ SMS_BACKEND = os.environ.get("SMS_BACKEND", "core.sms.ConsoleSMSBackend")
 # names below are only the defaults when none is set there.
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+_AI_TASKS = ("classify", "intake", "draft", "summarize", "assist")
+
+
+def _default_models(provider, fallback_model):
+    classify_model = os.environ.get(f"{provider.upper()}_MODEL_CLASSIFY", fallback_model)
+    return {
+        task: os.environ.get(f"{provider.upper()}_MODEL_{task.upper()}", classify_model) for task in _AI_TASKS
+    }
+
+
 AI_DEFAULT_MODELS = {
-    "openai": {"classify": os.environ.get("OPENAI_MODEL_CLASSIFY", "gpt-4")},
-    "anthropic": {"classify": os.environ.get("ANTHROPIC_MODEL_CLASSIFY", "claude-sonnet-5-5")},
+    "openai": _default_models("openai", "gpt-4"),
+    "anthropic": _default_models("anthropic", "claude-sonnet-5-5"),
 }
 # Dollars per million tokens as {"model-name": [input, output]}. Without it, cost and the monthly
 # budget cannot be tracked.
 AI_PRICING = json.loads(os.environ.get("AI_PRICING_JSON", "{}"))
+# Background jobs. With no REDIS_URL (local work, tests) tasks run inline instead of in a worker.
+CELERY_BROKER_URL = REDIS_URL or "memory://"
+CELERY_TASK_ALWAYS_EAGER = os.environ.get("CELERY_TASK_ALWAYS_EAGER", "" if REDIS_URL else "true").lower() == "true"
+CELERY_TASK_EAGER_PROPAGATES = True
+CELERY_TASK_ACKS_LATE = True
+CELERY_TASK_TIME_LIMIT = 180
+CELERY_TASK_IGNORE_RESULT = True
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+# Evidence files. Local disk for development; set EVIDENCE_STORAGE=core.storage.S3Storage and the
+# EVIDENCE_S3_* values for production. Files are released only after a scanner calls them clean.
+EVIDENCE_STORAGE = os.environ.get("EVIDENCE_STORAGE", "core.storage.LocalFileStorage")
+EVIDENCE_ROOT = os.environ.get("EVIDENCE_ROOT", str(BASE_DIR / "evidence_store"))
+EVIDENCE_S3_BUCKET = os.environ.get("EVIDENCE_S3_BUCKET", "")
+EVIDENCE_S3_REGION = os.environ.get("EVIDENCE_S3_REGION", "")
+EVIDENCE_S3_ENDPOINT_URL = os.environ.get("EVIDENCE_S3_ENDPOINT_URL", "")
+EVIDENCE_SCANNER = os.environ.get("EVIDENCE_SCANNER", "core.scanning.UnconfiguredScanner")
+CLAMD_HOST = os.environ.get("CLAMD_HOST", "")
+CLAMD_PORT = int(os.environ.get("CLAMD_PORT", 3310))
+EVIDENCE_ALLOW_UNSCANNED = os.environ.get("EVIDENCE_ALLOW_UNSCANNED", "false").lower() == "true"
+EVIDENCE_MAX_FILES_PER_COMPLAINT = 50
+MB = 1024 * 1024
+EVIDENCE_MAX_BYTES = {"image": 25 * MB, "audio": 50 * MB, "document": 25 * MB, "video": 200 * MB}
+
+AI_RUN_RETENTION_DAYS = int(os.environ.get("AI_RUN_RETENTION_DAYS", 180))
 AI_TOTAL_DEADLINE_SECONDS = 45
 AI_BACKOFF_BASE_SECONDS = 0.5
 AI_BREAKER_THRESHOLD = 5
@@ -178,6 +213,19 @@ LEGACY_API_ENABLED = os.environ.get("LEGACY_API_ENABLED", "true").lower() == "tr
 # Legacy (pre-/api/v1) complaint endpoint used a hardcoded user. Set this only while
 # the old frontend still posts without a user_id; remove once it is migrated.
 LEGACY_DEFAULT_USER_ID = os.environ.get("LEGACY_DEFAULT_USER_ID", "")
+
+# Operations. Metrics are served at /metrics/ only when a token is set. Sentry is on only with a DSN.
+METRICS_TOKEN = os.environ.get("METRICS_TOKEN", "")
+SENTRY_DSN = os.environ.get("SENTRY_DSN", "")
+if SENTRY_DSN:
+    from core.observability import init_sentry
+
+    init_sentry(
+        SENTRY_DSN,
+        environment=os.environ.get("SENTRY_ENVIRONMENT", "production"),
+        release=os.environ.get("RELEASE", ""),
+        traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0")),
+    )
 
 LOGGING = {
     "version": 1,

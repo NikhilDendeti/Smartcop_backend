@@ -8,7 +8,6 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.exceptions import NotFound
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from core import audit
@@ -21,12 +20,13 @@ from users.interactors.create_complaint import CreateComplaintInteractor
 from users.interactors.create_non_cognizable_complaint import CreateNonCognizableComplaintInteractor
 from users.interactors.get_complaint_details import GetComplaintDetailsInteractor
 from users.interactors.get_user_complaints import GetUserComplaintsInteractor
-from users.models import CaseType
+from users.models import CaseType, ConsentRecord
 from users.permissions import IsAdminRole, IsAnyRole, IsCitizen
 from users.serializers import (
     AIAssessmentRequestSerializer,
     CaseTypeCreateSerializer,
     ComplaintCreateSerializer,
+    ConsentSerializer,
     CurrentAddressSerializer,
     NonCognizableComplaintCreateSerializer,
 )
@@ -158,6 +158,109 @@ def mark_notification_read(request, notification_id):
     if not updated and not request.user.notifications.filter(pk=notification_id).exists():
         raise NotFound("Notification not found.")
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+def _consent_state(user):
+    latest = {}
+    for record in user.consents.order_by("granted_at"):
+        latest[record.purpose] = record
+    state = []
+    for purpose, label in ConsentRecord.PURPOSE_CHOICES:
+        record = latest.get(purpose)
+        state.append(
+            {
+                "purpose": purpose,
+                "label": label,
+                "granted": record is not None and record.revoked_at is None,
+                "policy_version": record.policy_version if record else None,
+                "granted_at": record.granted_at.isoformat() if record else None,
+                "revoked_at": record.revoked_at.isoformat() if record and record.revoked_at else None,
+            }
+        )
+    return state
+
+
+@extend_schema(tags=["privacy"])
+@api_view(["GET"])
+@permission_classes([IsCitizen])
+def list_consents(request):
+    return Response(_consent_state(request.user))
+
+
+@extend_schema(request=ConsentSerializer, tags=["privacy"])
+@api_view(["POST"])
+@permission_classes([IsCitizen])
+def set_consent(request):
+    serializer = ConsentSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.validated_data
+    now = timezone.now()
+
+    active = request.user.consents.filter(purpose=data["purpose"], revoked_at__isnull=True)
+    if data["granted"]:
+        if not active.filter(policy_version=data["policy_version"]).exists():
+            active.update(revoked_at=now)
+            ConsentRecord.objects.create(
+                user=request.user, purpose=data["purpose"], policy_version=data["policy_version"],
+                ip_address=audit.client_ip(request),
+            )
+    else:
+        active.update(revoked_at=now)
+
+    audit.record(request, "consent_granted" if data["granted"] else "consent_revoked", "consent",
+                 data["purpose"], metadata={"policy_version": data["policy_version"]})
+    return Response(_consent_state(request.user))
+
+
+@extend_schema(tags=["privacy"])
+@api_view(["GET"])
+@permission_classes([IsCitizen])
+def export_my_data(request):
+    """Everything held about the signed-in citizen, as one downloadable JSON document."""
+    user = request.user
+    complaints = complaints_for(user).select_related("case_type", "assessment").prefetch_related(
+        "accused", "witnesses", "evidence_files", "progress_updates"
+    )
+    document = {
+        "exported_at": timezone.now().isoformat(),
+        "profile": {
+            "name": user.name, "gender": user.gender, "date_of_birth": str(user.dob), "phone": user.phone,
+            "email": user.email, "aadhar_number": user.aadhar_number, "permanent_address": user.permanent_address,
+            "current_address": user.current_address, "created_at": user.created_at.isoformat(),
+        },
+        "complaints": [
+            {
+                "complaint_id": str(item.pk), "case_type": item.case_type.name, "status": item.status,
+                "incident_date": str(item.incident_date), "incident_time": str(item.incident_time),
+                "location": item.location, "incident_summary": item.incident_summary,
+                "created_at": item.created_at.isoformat(),
+                "ai_suggested_sections": item.assessment.ipc_sections if hasattr(item, "assessment") else {},
+                "accused": [{"name": a.name, "description": a.description, "statement": a.statement} for a in item.accused.all()],
+                "witnesses": [{"name": w.name, "statement": w.statement} for w in item.witnesses.all()],
+                "evidence_files": [{"filename": f.original_filename, "type": f.file_type, "size_bytes": f.size_bytes}
+                                   for f in item.evidence_files.all()],
+                "timeline": [{"status": p.stage, "at": p.timestamp.isoformat()} for p in item.progress_updates.all()],
+            }
+            for item in complaints
+        ],
+        "consents": [
+            {"purpose": c.purpose, "policy_version": c.policy_version, "granted_at": c.granted_at.isoformat(),
+             "revoked_at": c.revoked_at.isoformat() if c.revoked_at else None}
+            for c in user.consents.order_by("granted_at")
+        ],
+        "notifications": [
+            {"event": n.event, "message": n.message, "at": n.created_at.isoformat()}
+            for n in user.notifications.order_by("created_at")
+        ],
+        "assistant_questions": [
+            {"question": q.query_text, "answer": q.response_text, "at": q.created_at.isoformat()}
+            for q in user.chatquery_set.order_by("created_at")
+        ],
+    }
+    audit.record(request, "export_data", "user", user.pk)
+    response = Response(document)
+    response["Content-Disposition"] = 'attachment; filename="my-smartcop-data.json"'
+    return response
 
 
 @extend_schema(tags=["complaints"])

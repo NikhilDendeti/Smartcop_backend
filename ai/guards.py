@@ -10,7 +10,8 @@ from core.logging import redact_pii
 
 MAX_INCIDENT_CHARS = 5000
 CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
-INCIDENT_TAG = re.compile(r"</?\s*incident\s*>", re.IGNORECASE)
+# Every delimiter our prompts use to fence off citizen text. None may appear inside that text.
+INCIDENT_TAG = re.compile(r"</?\s*(?:incident|conversation|case_data|case_status|question)\s*>", re.IGNORECASE)
 
 # Coarse English keyword floor for the offences that must never be treated as routine. It raises
 # urgency and forces officer review; it never lowers anything. Other languages are covered by the
@@ -37,6 +38,37 @@ def sanitize_incident(text: str) -> str:
 def wrap_incident(text: str, incident_date: date | None = None) -> str:
     context = f"Date of incident: {incident_date.isoformat()}\n" if incident_date else ""
     return f"{context}<incident>\n{text}\n</incident>"
+
+
+EMERGENCY_NOTICE = (
+    "If you or someone else is in danger right now, call 112 (emergency) immediately. "
+    "Women's helpline: 1091. Child helpline: 1098."
+)
+
+# Phrases a citizen-facing reply must not contain: legal advice and outcome promises. This is a
+# backstop to the prompt, not a complete defence.
+FORBIDDEN_REPLY = re.compile(
+    r"\b(you (?:will|are going to|should) (?:be )?(?:win|convict\w*|sue|plead|arrest\w*)|"
+    r"(?:he|she|they|the accused) (?:will|is going to) (?:be )?(?:convict\w*|jail\w*|arrest\w*)|"
+    r"guarantee\w*|i promise|legal advice)\b",
+    re.I,
+)
+EMERGENCY_PATTERNS = re.compile(
+    r"\b(in danger|right now|happening now|being (?:attacked|followed|beaten|threatened)|"
+    r"he is (?:here|outside)|she is (?:here|outside)|bleeding|unconscious|help me)\b",
+    re.I,
+)
+
+
+def looks_like_emergency(text: str) -> bool:
+    """Rule-based emergency check, independent of the model, so help is shown even if the AI is down."""
+    urgent_words = re.search(r"\b(in danger|help me|being attacked|bleeding|unconscious)\b", text, re.I)
+    serious_and_ongoing = safety_floor(text)[0] >= 85 and EMERGENCY_PATTERNS.search(text)
+    return bool(urgent_words or serious_and_ongoing)
+
+
+def reply_is_safe(reply: str) -> bool:
+    return not FORBIDDEN_REPLY.search(reply)
 
 
 def safety_floor(text: str):

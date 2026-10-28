@@ -1,10 +1,14 @@
 import base64
 import hashlib
+import os
 
 from .base import *  # noqa: F401,F403
 from .base import FIELD_ENCRYPTION_KEY, SECRET_KEY, env_list
 
 DEBUG = True
+
+# Local work has no virus scanner, so let files through; production leaves this off.
+EVIDENCE_ALLOW_UNSCANNED = os.environ.get("EVIDENCE_ALLOW_UNSCANNED", "true").lower() == "true"
 
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]")
 

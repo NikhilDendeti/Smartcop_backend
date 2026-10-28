@@ -123,7 +123,7 @@ class CitizenScopeTests(RBACTestCase):
 
     def test_complaint_owner_is_the_token_holder_not_the_body(self):
         body = {**COMPLAINT_BODY, "user_id": str(self.other_citizen.pk)}
-        with patch("users.interactors.create_complaint.classify_incident", return_value=fake_classification()):
+        with patch("ai.assessment.classify_incident", return_value=fake_classification()):
             response = self.post(self.citizen, "/api/v1/complaints/", body)
         self.assertEqual(Complaint.objects.get(pk=response.json()["complaint_id"]).user_id, self.citizen.pk)
 

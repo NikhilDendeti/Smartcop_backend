@@ -12,6 +12,12 @@ from core.request_context import get_request_id
 
 logger = logging.getLogger(__name__)
 
+class ServiceUnavailable(APIException):
+    status_code = 503
+    default_detail = "The service is temporarily unavailable. Please try again shortly."
+    default_code = "service_unavailable"
+
+
 STATUS_CODES = {
     status.HTTP_400_BAD_REQUEST: "bad_request",
     status.HTTP_401_UNAUTHORIZED: "unauthorized",

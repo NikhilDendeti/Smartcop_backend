@@ -7,6 +7,7 @@ from django.db.models import Max
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
+from ai.models import AIReview
 from police import workflow
 from police.interactors.assign_complaint_to_hc import AssignComplaintToHCInteractor
 from police.models import Escalation, FIRDraft, InvestigationUpdate, MagistrateApproval
@@ -33,7 +34,7 @@ def assign_complaint(complaint, actor, hc_phone, notes="", expected_version=None
                 complaint_id=complaint.pk, hc_phone=hc_phone, notes=notes, actor=actor
             ).execute()
         except ValueError as error:
-            raise ValidationError(str(error))
+            raise ValidationError(str(error)) from error
 
         head_constable = updated.officer_assigned or Complaint.objects.get(pk=complaint.pk).officer_assigned
         if head_constable:
@@ -117,7 +118,47 @@ def add_note(complaint, actor, text):
     )
 
 
-def create_draft(complaint, actor, document_type, content):
+def review_assessment(complaint, reviewer, decision, *, sections=None, is_cognizable=None,
+                      urgency_score=None, notes=""):
+    """An officer's decision on the AI's suggestion. The result of the review, not the AI output,
+    is what the case relies on from here, and the decision is kept to measure the AI against."""
+    assessment = getattr(complaint, "assessment", None)
+    if assessment is None:
+        raise workflow.InvalidTransition("This complaint has no AI assessment to review.")
+    if assessment.ai_status == "pending":
+        raise workflow.InvalidTransition("The AI assessment is still being prepared.")
+
+    original = dict(assessment.ipc_sections)
+    final = {"accepted": original, "edited": sections or {}, "rejected": {}}[decision]
+
+    with transaction.atomic():
+        AIReview.objects.create(
+            assessment=assessment, reviewer=reviewer, decision=decision,
+            original_sections=original, final_sections=final, notes=notes,
+        )
+        assessment.ipc_sections = final
+        assessment.ipc_descriptions = final
+        assessment.needs_review = False
+        assessment.reviewed_by = reviewer
+        assessment.reviewed_at = timezone.now()
+        if urgency_score is not None:
+            assessment.urgency_score = urgency_score
+        assessment.save()
+
+        changed = []
+        if is_cognizable is not None and is_cognizable != complaint.is_cognizable:
+            complaint.is_cognizable = is_cognizable
+            changed.append("is_cognizable")
+        if urgency_score is not None:
+            complaint.ai_urgency_score = urgency_score
+            changed.append("ai_urgency_score")
+        if changed:
+            complaint.version += 1
+            complaint.save(update_fields=changed + ["version", "updated_at"])
+    return assessment
+
+
+def create_draft(complaint, actor, document_type, content, source="officer", ai_run_id=None):
     if document_type == "fir":
         problem = workflow._investigation_allowed(complaint, "")
         if problem:
@@ -131,7 +172,8 @@ def create_draft(complaint, actor, document_type, content):
             document_type=document_type,
             version=(latest or 0) + 1,
             content=content,
-            source="officer",
+            source=source,
+            ai_run_id=ai_run_id,
             created_by=actor,
         )
 
