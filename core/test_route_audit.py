@@ -9,10 +9,12 @@ from rest_framework.permissions import AllowAny
 from core.test_rbac import RBACTestCase
 from core.testing import auth_headers
 
-# The only routes that may be used without being signed in: the login flow itself.
+# The only routes that may be used without being signed in: logging in and registering.
 PUBLIC_ROUTES = {
     "api/v1/auth/otp/request/",
     "api/v1/auth/otp/verify/",
+    "api/v1/auth/register/request/",
+    "api/v1/auth/register/verify/",
     "api/v1/auth/token/refresh/",
 }
 SKIP_METHODS = {"options", "head", "trace"}

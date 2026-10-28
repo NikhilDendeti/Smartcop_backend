@@ -1,4 +1,5 @@
 from users.models import Complaint, AIAssessment, Accused, Witness, Evidence
+from users.progress import status_fields, timeline
 from django.core.exceptions import ObjectDoesNotExist
 
 class GetComplaintDetailsInteractor:
@@ -29,9 +30,13 @@ class GetComplaintDetailsInteractor:
                 "incident_time": str(complaint.incident_time),
                 "is_cognizable": complaint.is_cognizable,
                 "status": complaint.status,
+                **status_fields(complaint.status),
+                "ai_status": assessment.ai_status if assessment else None,
+                "timeline": timeline(complaint),
                 "ai_urgency_score": complaint.ai_urgency_score,
                 "created_at": str(complaint.created_at),
                 "assessment": {
+                    "ai_status": assessment.ai_status if assessment else None,
                     "ipc_sections": assessment.ipc_sections if assessment else {},
                     "ipc_descriptions": assessment.ipc_descriptions if assessment else {},
                     "urgency_score": assessment.urgency_score if assessment else None,
@@ -59,7 +64,17 @@ class GetComplaintDetailsInteractor:
                         "file_url": ev.file_url,
                         "uploaded_at": str(ev.uploaded_at)
                     } for ev in evidence_list
-                ]
+                ],
+                "evidence_files": [
+                    {
+                        "file_id": str(item.file_id),
+                        "filename": item.original_filename,
+                        "type": item.file_type,
+                        "size_bytes": item.size_bytes,
+                        "uploaded": item.verified_at is not None,
+                        "scan_status": item.scan_status,
+                    } for item in complaint.evidence_files.order_by('uploaded_at')
+                ],
             }
         except ObjectDoesNotExist:
             return None

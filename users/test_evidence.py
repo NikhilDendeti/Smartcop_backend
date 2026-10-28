@@ -117,6 +117,39 @@ class UploadFlowTests(EvidenceTestCase):
         self.assertNotIn("..", record.original_filename.split(".")[0])
 
 
+class BrowserRecordingTests(EvidenceTestCase):
+    """What a browser's MediaRecorder produces must be accepted end to end."""
+
+    def test_webm_and_ogg_recordings_are_accepted_as_video_and_audio(self):
+        for content_type, kind in [("video/webm", "video"), ("audio/webm", "audio"), ("audio/ogg", "audio")]:
+            response = self.announce(self.citizen, content_type=content_type, name=f"rec.{content_type.split('/')[1]}")
+            self.assertEqual(response.status_code, 201, content_type)
+            self.assertEqual(response.json()["type"], kind)
+
+    def test_codec_suffixes_from_the_browser_are_ignored_and_the_clean_type_is_stored(self):
+        response = self.announce(self.citizen, content_type="video/webm;codecs=vp9,opus", name="answer.webm")
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["content_type"], "video/webm")
+        self.assertEqual(response.json()["upload"]["headers"], {"Content-Type": "application/octet-stream"})
+
+    def test_a_recorded_answer_can_be_uploaded_verified_and_played_back(self):
+        recording = bytes.fromhex("1a45dfa3") + b"webm-frames" * 40  # starts like a real webm file
+        file_id = self.upload_fully(self.citizen, content=recording)  # initiates as image/jpeg by default
+        self.assertTrue(file_id)
+
+        announced = self.announce(self.citizen, content=recording, name="answer.webm", content_type="video/webm;codecs=vp8")
+        new_id = announced.json()["file_id"]
+        self.assertEqual(self.send(self.citizen, new_id, recording).status_code, 204)
+        with patch("users.evidence_api.get_scanner", return_value=CleanScanner()):
+            done = self.complete(self.citizen, new_id).json()
+        self.assertTrue(done["uploaded"])
+        self.assertEqual(self.download(self.citizen, new_id).body_bytes, recording)
+
+    def test_unlisted_types_are_still_refused_even_with_parameters(self):
+        self.assertEqual(self.announce(self.citizen, content_type="application/x-msdownload; charset=x").status_code, 400)
+        self.assertEqual(self.announce(self.citizen, content_type="text/html").status_code, 400)
+
+
 class ValidationTests(EvidenceTestCase):
     def test_disallowed_types_are_refused(self):
         self.assertEqual(self.announce(self.citizen, content_type="application/x-msdownload").status_code, 400)

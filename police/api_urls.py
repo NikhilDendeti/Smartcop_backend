@@ -4,6 +4,7 @@ from police import api_views
 
 urlpatterns = [
     path("me/", api_views.officer_me),
+    path("stats/", api_views.officer_stats),
     path("head-constables/", api_views.list_head_constables),
     path("complaints/", api_views.list_complaints),
     path("complaints/assign/", api_views.assign_complaint),

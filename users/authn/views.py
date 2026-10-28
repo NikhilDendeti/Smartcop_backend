@@ -10,7 +10,14 @@ from core.throttles import OTPRequestIPThrottle, OTPRequestPhoneThrottle, OTPVer
 from users.access import actor_role, officer_profile
 from users.authn.authentication import NoCredentials
 from users.authn.otp import request_otp, verify_otp
-from users.authn.serializers import OTPRequestSerializer, OTPVerifySerializer, RefreshSerializer
+from users.authn.registration import register_citizen
+from users.authn.serializers import (
+    OTPRequestSerializer,
+    OTPVerifySerializer,
+    RefreshSerializer,
+    RegisterRequestSerializer,
+    RegisterVerifySerializer,
+)
 from users.authn.tokens import issue_token_pair, revoke_refresh_token, rotate_refresh_token
 
 
@@ -63,6 +70,46 @@ def otp_verify(request):
     audit.record(request, "login", "auth", user.pk, actor=user)
     tokens = issue_token_pair(user, user_agent=_user_agent(request))
     return Response({**tokens, "user": {"user_id": str(user.pk), "name": user.name, "role": role}})
+
+
+@extend_schema(request=RegisterRequestSerializer, tags=["auth"])
+@api_view(["POST"])
+@authentication_classes([NoCredentials])
+@permission_classes([AllowAny])
+@throttle_classes([OTPRequestIPThrottle, OTPRequestPhoneThrottle])
+def register_request(request):
+    serializer = RegisterRequestSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+
+    request_otp(serializer.validated_data["phone"], registering=True)
+    return Response(
+        {"message": "If this number can be registered, a verification code has been sent."},
+        status=status.HTTP_202_ACCEPTED,
+    )
+
+
+@extend_schema(request=RegisterVerifySerializer, tags=["auth"])
+@api_view(["POST"])
+@authentication_classes([NoCredentials])
+@permission_classes([AllowAny])
+@throttle_classes([OTPVerifyPhoneThrottle])
+def register_verify(request):
+    serializer = RegisterVerifySerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.validated_data
+
+    try:
+        user = register_citizen(request, data)
+    except AuthenticationFailed:
+        audit.record(request, "register", "auth", _masked(data["phone"]), outcome="failed")
+        raise
+
+    audit.record(request, "register", "auth", user.pk, actor=user)
+    tokens = issue_token_pair(user, user_agent=_user_agent(request))
+    return Response(
+        {**tokens, "user": {"user_id": str(user.pk), "name": user.name, "role": actor_role(user)}},
+        status=status.HTTP_201_CREATED,
+    )
 
 
 @extend_schema(request=RefreshSerializer, tags=["auth"])

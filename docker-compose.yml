@@ -10,7 +10,9 @@ x-app: &app
     REDIS_URL: redis://redis:6379/0
     CELERY_TASK_ALWAYS_EAGER: "false"
     ALLOWED_HOSTS: localhost,127.0.0.1
-    CORS_ALLOWED_ORIGINS: http://localhost:8080,http://localhost:3000
+    CORS_ALLOWED_ORIGINS: http://localhost:8080,http://localhost:3000,http://localhost:5173,http://localhost:4173
+    # Local development only: every login code is this value, so no SMS provider is needed.
+    DEV_FIXED_OTP: ${DEV_FIXED_OTP:-123456}
   volumes:
     - .:/app
   depends_on:
@@ -26,7 +28,8 @@ services:
       sh -c "python manage.py migrate --noinput &&
              gunicorn Smartcop_backend.wsgi:application --bind 0.0.0.0:8000 --reload"
     ports:
-      - "8000:8000"
+      # Change API_PORT if 8000 is already taken on your machine.
+      - "${API_PORT:-8000}:8000"
 
   worker:
     <<: *app

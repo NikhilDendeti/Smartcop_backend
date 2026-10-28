@@ -196,3 +196,19 @@ class AssistOut(BaseModel):
 
 def parse_assist(data: dict) -> AssistOut:
     return AssistOut.model_validate(data)
+
+
+# --- Legal information assistant --------------------------------------------------------------
+LEGAL_SCHEMA_NAME = "answer_legal_question"
+LEGAL_SCHEMA = _object({"answer": STRING, "in_scope": BOOLEAN})
+
+
+class LegalOut(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    answer: str = Field(max_length=2000)
+    in_scope: bool
+
+
+def parse_legal(data: dict) -> LegalOut:
+    return LegalOut.model_validate(data)

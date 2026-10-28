@@ -14,7 +14,9 @@ from core import audit
 from core.idempotency import idempotent
 from core.pagination import StandardPagination
 from core.throttles import AIRateThrottle
-from users.access import complaints_for
+from police.models import PoliceStation
+from users.access import CITIZEN, actor_role, complaints_for
+from users.consent import require_consent
 from users.interactors.create_case_type import CreateCaseTypeInteractor
 from users.interactors.create_complaint import CreateComplaintInteractor
 from users.interactors.create_non_cognizable_complaint import CreateNonCognizableComplaintInteractor
@@ -44,6 +46,19 @@ def update_current_address(request):
     user.current_address = serializer.validated_data["current_address"]
     user.save(update_fields=["current_address", "updated_at"])
     return Response({"message": "Current address updated successfully", "current_address": user.current_address})
+
+
+@extend_schema(tags=["reference"])
+@api_view(["GET"])
+@permission_classes([IsAnyRole])
+def list_stations(request):
+    stations = PoliceStation.objects.filter(is_active=True).order_by("state", "district", "name")
+    return Response(
+        [
+            {"station_id": str(item.pk), "name": item.name, "code": item.code, "district": item.district, "state": item.state}
+            for item in stations
+        ]
+    )
 
 
 @extend_schema(tags=["case types"])
@@ -77,6 +92,8 @@ def create_case_type(request):
 def ai_assessment(request):
     serializer = AIAssessmentRequestSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
+    if actor_role(request.user) == CITIZEN:
+        require_consent(request.user)  # the citizen's account of the incident goes to an AI vendor
 
     return Response(get_ai_assessment(serializer.validated_data["incident_summary"]))
 
@@ -148,7 +165,7 @@ def list_notifications(request):
     )
 
 
-@extend_schema(tags=["notifications"])
+@extend_schema(request=None, tags=["notifications"])
 @api_view(["POST"])
 @permission_classes([IsAnyRole])
 def mark_notification_read(request, notification_id):

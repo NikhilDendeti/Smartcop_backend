@@ -219,7 +219,7 @@ class ChatQuery(models.Model):
 class OTPChallenge(models.Model):
     """A one-time code sent to a phone. Only a hash of the code is stored."""
 
-    PURPOSE_CHOICES = (('login', 'Login'),)
+    PURPOSE_CHOICES = (('login', 'Login'), ('register', 'Registration'))
 
     challenge_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     phone = models.CharField(max_length=15, db_index=True)

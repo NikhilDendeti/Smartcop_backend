@@ -4,6 +4,10 @@ Authorisation has two layers: a role check on the endpoint, then complaints_for(
 only ever reaches complaints in their scope. Out-of-scope complaints answer 404, not 403. Status
 changes always go through police.workflow, which enforces who may move a case where."""
 
+from datetime import timedelta
+
+from django.db.models import Count, Q
+from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.exceptions import NotFound, PermissionDenied
@@ -31,7 +35,9 @@ from police.serializers import (
     UpdateStatusSerializer,
 )
 from users.access import OFFICER_ROLES, actor_role, complaints_for, officer_profile
+from users.models import CASE_STATUSES
 from users.permissions import IsCaseParticipant, IsCommander, IsMagistrate, IsOfficer
+from users.progress import HIGH_URGENCY
 
 
 def _scoped(user, complaint_id):
@@ -104,6 +110,32 @@ def complaint_details(request, complaint_id):
 
     audit.record(request, "view", "complaint", complaint_id)
     return Response(GetComplaintDetailsInteractor(complaint_id, actor=request.user).execute())
+
+
+@extend_schema(tags=["police"])
+@api_view(["GET"])
+@permission_classes([IsCaseParticipant])
+def officer_stats(request):
+    """Counts for the dashboard cards, over exactly the complaints this person may see."""
+    visible = complaints_for(request.user)
+    open_cases = ~Q(status="resolved")
+    totals = visible.aggregate(
+        total=Count("pk", distinct=True),
+        high_urgency_open=Count("pk", distinct=True, filter=open_cases & Q(ai_urgency_score__gte=HIGH_URGENCY)),
+        awaiting_ai_review=Count(
+            "pk", distinct=True,
+            filter=Q(assessment__needs_review=True, assessment__reviewed_at__isnull=True) & ~Q(assessment__ai_status="pending"),
+        ),
+        unassigned=Count(
+            "pk", distinct=True, filter=Q(status__in=("pending", "under_review"), officer_assigned__isnull=True)
+        ),
+        assigned_to_me=Count("pk", distinct=True, filter=open_cases & Q(officer_assigned=request.user)),
+        filed_last_7_days=Count("pk", distinct=True, filter=Q(created_at__gte=timezone.now() - timedelta(days=7))),
+    )
+    by_status = {value: 0 for value, _ in CASE_STATUSES}
+    for row in visible.values("status").annotate(n=Count("pk", distinct=True)).order_by():
+        by_status[row["status"]] = row["n"]
+    return Response({**totals, "by_status": by_status})
 
 
 @extend_schema(tags=["police"])
@@ -303,7 +335,7 @@ def ai_draft(request, complaint_id):
     return Response(_draft_row(draft), status=201)
 
 
-@extend_schema(tags=["police", "ai"])
+@extend_schema(request=None, tags=["police", "ai"])
 @api_view(["POST"])
 @permission_classes([IsCaseParticipant])
 @throttle_classes([AIRateThrottle])
@@ -360,7 +392,7 @@ def ai_review(request, complaint_id):
     return Response({"complaint_id": str(complaint.pk), "decision": data["decision"]})
 
 
-@extend_schema(tags=["police"])
+@extend_schema(request=None, tags=["police"])
 @api_view(["POST"])
 @permission_classes([IsCommander])
 def approve_draft(request, complaint_id, draft_id):

@@ -12,6 +12,7 @@ import uuid
 from django.conf import settings
 from django.http import FileResponse
 from django.utils import timezone
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 from rest_framework.decorators import api_view, parser_classes, permission_classes
@@ -28,8 +29,9 @@ from users.permissions import IsEvidenceReader, IsEvidenceUploader
 # Declared content type -> evidence category. Anything else is refused.
 CONTENT_TYPES = {
     "image/jpeg": "image", "image/png": "image", "image/webp": "image", "image/heic": "image",
-    "video/mp4": "video", "video/quicktime": "video",
+    "video/mp4": "video", "video/quicktime": "video", "video/webm": "video",
     "audio/mpeg": "audio", "audio/wav": "audio", "audio/x-wav": "audio", "audio/mp4": "audio",
+    "audio/webm": "audio", "audio/ogg": "audio",
     "application/pdf": "document",
 }
 UNSAFE_NAME = re.compile(r"[\x00-\x1f\x7f/\\]")
@@ -42,9 +44,16 @@ class Conflict(APIException):
 
 class EvidenceInitSerializer(serializers.Serializer):
     filename = serializers.CharField(max_length=255)
-    content_type = serializers.ChoiceField(choices=sorted(CONTENT_TYPES))
+    content_type = serializers.CharField(max_length=150)
     size_bytes = serializers.IntegerField(min_value=1)
     sha256 = serializers.RegexField(r"^[0-9a-fA-F]{64}$", error_messages={"invalid": "Send the file's SHA-256 as 64 hex characters."})
+
+    def validate_content_type(self, value):
+        # Browsers label recordings like "video/webm;codecs=vp9,opus"; only the base type matters.
+        base = value.split(";")[0].strip().lower()
+        if base not in CONTENT_TYPES:
+            raise serializers.ValidationError(f"Files of type '{base}' are not accepted.")
+        return base
 
     def validate(self, attrs):
         category = CONTENT_TYPES[attrs["content_type"]]
@@ -129,7 +138,7 @@ def complaint_evidence(request, complaint_id):
     )
 
 
-@extend_schema(tags=["evidence"])
+@extend_schema(request={"application/octet-stream": OpenApiTypes.BINARY}, tags=["evidence"])
 @api_view(["PUT"])
 @permission_classes([IsEvidenceUploader])
 @parser_classes([])
@@ -164,7 +173,7 @@ def evidence_content(request, file_id):
     return Response(status=204)
 
 
-@extend_schema(tags=["evidence"])
+@extend_schema(request=None, tags=["evidence"])
 @api_view(["POST"])
 @permission_classes([IsEvidenceUploader])
 def evidence_complete(request, file_id):

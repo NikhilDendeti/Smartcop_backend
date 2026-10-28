@@ -1,4 +1,5 @@
 from users.models import Complaint, AIAssessment
+from users.progress import priority_for, status_fields
 from police.models import *
 
 class ListAllComplaintsInteractor:
@@ -33,6 +34,8 @@ class ListAllComplaintsInteractor:
                 "status": complaint.status,
                 "current_stage": latest_stage,
                 "ai_urgency_score": ai_score,
+                "priority": priority_for(complaint.ai_urgency_score),
+                "status_label": status_fields(complaint.status)["status_label"],
                 "ai_status": assessment.ai_status if assessment else None,
                 "needs_review": assessment.needs_review if assessment else None,
                 "ipc_sections": ipc_sections,

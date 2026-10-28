@@ -8,7 +8,7 @@ from ai import gateway
 from ai.providers.base import LLMRequest
 from ai.schemas import CLASSIFY_SCHEMA, parse_classification
 from ai.testing import GOOD_OUTPUT, AITestCase
-from core.testing import auth_headers, make_user
+from core.testing import auth_headers, grant_consent, make_user
 
 JSON = "application/json"
 BROKEN_CACHE = {"default": {"BACKEND": "core.testing.BrokenCache"}}
@@ -58,6 +58,7 @@ class CacheDownTests(AITestCase):
 
     def test_the_ai_rate_limit_fails_open_because_cost_is_capped_separately(self):
         user = make_user()
+        grant_consent(user)
         with patch("users.api_views.get_ai_assessment", return_value={"ai_status": "ok"}):
             response = self.client.post(
                 "/api/v1/ai/assessments/", {"incident_summary": "x"}, content_type=JSON, **auth_headers(user)

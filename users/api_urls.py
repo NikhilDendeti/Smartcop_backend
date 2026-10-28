@@ -6,6 +6,7 @@ urlpatterns = [
     path("auth/", include("users.authn.urls")),
     path("users/current-address/", api_views.update_current_address),
     path("case-types/", api_views.list_case_types),
+    path("stations/", api_views.list_stations),
     path("case-types/create/", api_views.create_case_type),
     path("ai/assessments/", api_views.ai_assessment),
     path("complaints/", api_views.create_complaint),

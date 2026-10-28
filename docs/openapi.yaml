@@ -1,0 +1,5873 @@
+openapi: 3.0.3
+info:
+  title: SmartCop API
+  version: 1.0.0
+  description: Complaint management and AI-assisted triage for police stations.
+paths:
+  /api/v1/admin/ai/config/:
+    get:
+      operationId: get_admin_ai_config
+      tags:
+      - admin
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIConfig'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+    patch:
+      operationId: patch_admin_ai_config
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAIConfig'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAIConfig'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAIConfig'
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIConfig'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/admin/ai/usage/:
+    get:
+      operationId: get_admin_ai_usage
+      tags:
+      - admin
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIUsage'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/ai/assessments/:
+    post:
+      operationId: post_ai_assessments
+      tags:
+      - ai
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIAssessmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AIAssessmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AIAssessmentRequest'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIPreview'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/assistant/ask/:
+    post:
+      operationId: post_assistant_ask
+      tags:
+      - ai
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ask'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Ask'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Ask'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssistantAnswer'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/auth/logout/:
+    post:
+      operationId: post_auth_logout
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Refresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Refresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Refresh'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: No response body
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/auth/me/:
+    get:
+      operationId: get_auth_me
+      tags:
+      - auth
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/auth/otp/request/:
+    post:
+      operationId: post_auth_otp_request
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTPRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OTPRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OTPRequest'
+        required: true
+      security:
+      - {}
+      - {}
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/auth/otp/verify/:
+    post:
+      operationId: post_auth_otp_verify
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTPVerify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OTPVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OTPVerify'
+        required: true
+      security:
+      - {}
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/auth/register/request/:
+    post:
+      operationId: post_auth_register_request
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      security:
+      - {}
+      - {}
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/auth/register/verify/:
+    post:
+      operationId: post_auth_register_verify
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterVerify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterVerify'
+        required: true
+      security:
+      - {}
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/auth/token/refresh/:
+    post:
+      operationId: post_auth_token_refresh
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Refresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Refresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Refresh'
+        required: true
+      security:
+      - {}
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tokens'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/case-types/:
+    get:
+      operationId: get_case_types
+      tags:
+      - case types
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CaseTypeRow'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/case-types/create/:
+    post:
+      operationId: post_case_types_create
+      tags:
+      - case types
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseTypeCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CaseTypeCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CaseTypeCreate'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseTypeCreated'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/complaints/:
+    post:
+      operationId: post_complaints
+      tags:
+      - complaints
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComplaintCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ComplaintCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ComplaintCreate'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplaintCreated'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/complaints/{complaint_id}/:
+    get:
+      operationId: get_complaints_by_complaint_id
+      parameters:
+      - in: path
+        name: complaint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - complaints
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CitizenComplaintDetail'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/complaints/{complaint_id}/evidence-files/:
+    get:
+      operationId: get_complaints_by_complaint_id_evidence_files
+      parameters:
+      - in: path
+        name: complaint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - evidence
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EvidenceFileRow'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+    post:
+      operationId: post_complaints_by_complaint_id_evidence_files
+      parameters:
+      - in: path
+        name: complaint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - evidence
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvidenceInit'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EvidenceInit'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EvidenceInit'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceFileInit'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/complaints/mine/:
+    get:
+      operationId: get_complaints_mine
+      tags:
+      - complaints
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedCitizenComplaints'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/complaints/non-cognizable/:
+    post:
+      operationId: post_complaints_non_cognizable
+      tags:
+      - complaints
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NonCognizableComplaintCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NonCognizableComplaintCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NonCognizableComplaintCreate'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NonCognizableCreated'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/consents/:
+    get:
+      operationId: get_consents
+      tags:
+      - privacy
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConsentState'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/consents/update/:
+    post:
+      operationId: post_consents_update
+      tags:
+      - privacy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Consent'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Consent'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Consent'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConsentState'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/evidence-files/{file_id}/complete/:
+    post:
+      operationId: post_evidence_files_by_file_id_complete
+      parameters:
+      - in: path
+        name: file_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - evidence
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceFileRow'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/evidence-files/{file_id}/content/:
+    put:
+      operationId: put_evidence_files_by_file_id_content
+      description: Receives the bytes when storage is local. With S3 the client uploads
+        straight to the bucket.
+      parameters:
+      - in: path
+        name: file_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - evidence
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: No response body
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/evidence-files/{file_id}/download/:
+    get:
+      operationId: get_evidence_files_by_file_id_download
+      parameters:
+      - in: path
+        name: file_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - evidence
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadLink'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/intake/conversations/:
+    post:
+      operationId: post_intake_conversations
+      tags:
+      - ai
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntakeStart'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/IntakeStart'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/IntakeStart'
+      security:
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntakeStarted'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/intake/conversations/{conversation_id}/:
+    get:
+      operationId: get_intake_conversations_by_conversation_id
+      parameters:
+      - in: path
+        name: conversation_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - ai
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntakeDetail'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/intake/conversations/{conversation_id}/messages/:
+    post:
+      operationId: post_intake_conversations_by_conversation_id_messages
+      parameters:
+      - in: path
+        name: conversation_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - ai
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntakeMessage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/IntakeMessage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/IntakeMessage'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntakeTurn'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/legal-assistant/ask/:
+    post:
+      operationId: post_legal_assistant_ask
+      tags:
+      - ai
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegalAsk'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LegalAsk'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LegalAsk'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegalAnswer'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/me/export/:
+    get:
+      operationId: get_me_export
+      description: Everything held about the signed-in citizen, as one downloadable
+        JSON document.
+      tags:
+      - privacy
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/notifications/:
+    get:
+      operationId: get_notifications
+      tags:
+      - notifications
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedNotifications'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/notifications/{notification_id}/read/:
+    post:
+      operationId: post_notifications_by_notification_id_read
+      parameters:
+      - in: path
+        name: notification_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - notifications
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: No response body
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/ai-review-queue/:
+    get:
+      operationId: get_police_ai_review_queue
+      tags:
+      - police
+      - ai
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedReviewQueue'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/complaints/:
+    get:
+      operationId: get_police_complaints
+      parameters:
+      - in: query
+        name: status
+        schema:
+          enum:
+          - pending
+          - under_review
+          - assigned
+          - under_investigation
+          - awaiting_magistrate
+          - fir_registered
+          - gd_recorded
+          - resolved
+          type: string
+          minLength: 1
+        description: |-
+          * `pending` - pending
+          * `under_review` - under_review
+          * `assigned` - assigned
+          * `under_investigation` - under_investigation
+          * `awaiting_magistrate` - awaiting_magistrate
+          * `fir_registered` - fir_registered
+          * `gd_recorded` - gd_recorded
+          * `resolved` - resolved
+      tags:
+      - police
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedOfficerComplaints'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/complaints/{complaint_id}/:
+    get:
+      operationId: get_police_complaints_by_complaint_id
+      parameters:
+      - in: path
+        name: complaint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - police
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfficerComplaintDetail'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/complaints/{complaint_id}/ai-review/:
+    post:
+      operationId: post_police_complaints_by_complaint_id_ai_review
+      parameters:
+      - in: path
+        name: complaint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - police
+      - ai
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIReview'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AIReview'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AIReview'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewResult'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/complaints/{complaint_id}/drafts/:
+    get:
+      operationId: get_police_complaints_by_complaint_id_drafts
+      parameters:
+      - in: path
+        name: complaint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - police
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DraftRow'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+    post:
+      operationId: post_police_complaints_by_complaint_id_drafts
+      parameters:
+      - in: path
+        name: complaint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - police
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DraftCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DraftCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DraftCreate'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftRow'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/complaints/{complaint_id}/drafts/{draft_id}/approve/:
+    post:
+      operationId: post_police_complaints_by_complaint_id_drafts_by_draft_id_approve
+      parameters:
+      - in: path
+        name: complaint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: draft_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - police
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftRow'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/complaints/{complaint_id}/drafts/ai/:
+    post:
+      operationId: post_police_complaints_by_complaint_id_drafts_ai
+      parameters:
+      - in: path
+        name: complaint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - police
+      - ai
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIDraft'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AIDraft'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AIDraft'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftRow'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/complaints/{complaint_id}/escalations/:
+    get:
+      operationId: get_police_complaints_by_complaint_id_escalations
+      parameters:
+      - in: path
+        name: complaint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - police
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EscalationRow'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+    post:
+      operationId: post_police_complaints_by_complaint_id_escalations
+      parameters:
+      - in: path
+        name: complaint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - police
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Escalate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Escalate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Escalate'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EscalationCreated'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/complaints/{complaint_id}/magistrate-approval/:
+    post:
+      operationId: post_police_complaints_by_complaint_id_magistrate_approval
+      parameters:
+      - in: path
+        name: complaint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - police
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MagistrateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MagistrateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MagistrateRequest'
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransitionResult'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/complaints/{complaint_id}/magistrate-decision/:
+    post:
+      operationId: post_police_complaints_by_complaint_id_magistrate_decision
+      parameters:
+      - in: path
+        name: complaint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - police
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MagistrateDecision'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MagistrateDecision'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MagistrateDecision'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransitionResult'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/complaints/{complaint_id}/notes/:
+    get:
+      operationId: get_police_complaints_by_complaint_id_notes
+      parameters:
+      - in: path
+        name: complaint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - police
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NoteRow'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+    post:
+      operationId: post_police_complaints_by_complaint_id_notes
+      parameters:
+      - in: path
+        name: complaint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - police
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Note'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Note'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Note'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteCreated'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/complaints/{complaint_id}/summary/:
+    post:
+      operationId: post_police_complaints_by_complaint_id_summary
+      parameters:
+      - in: path
+        name: complaint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - police
+      - ai
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseSummary'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/complaints/{complaint_id}/triage/:
+    get:
+      operationId: get_police_complaints_by_complaint_id_triage
+      parameters:
+      - in: path
+        name: complaint_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - police
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriageSuggestion'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/complaints/assign/:
+    post:
+      operationId: post_police_complaints_assign
+      tags:
+      - police
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignComplaint'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AssignComplaint'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AssignComplaint'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssignResult'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/complaints/mark-under-investigation/:
+    post:
+      operationId: post_police_complaints_mark_under_investigation
+      tags:
+      - police
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkUnderInvestigation'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MarkUnderInvestigation'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MarkUnderInvestigation'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransitionResult'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/complaints/status/:
+    post:
+      operationId: post_police_complaints_status
+      tags:
+      - police
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStatus'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UpdateStatus'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UpdateStatus'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransitionResult'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/head-constables/:
+    get:
+      operationId: get_police_head_constables
+      tags:
+      - police
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeadConstableList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/me/:
+    get:
+      operationId: get_police_me
+      tags:
+      - police
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfficerMe'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/police/stats/:
+    get:
+      operationId: get_police_stats
+      description: Counts for the dashboard cards, over exactly the complaints this
+        person may see.
+      tags:
+      - police
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfficerStats'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/stations/:
+    get:
+      operationId: get_stations
+      tags:
+      - reference
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Station'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/users/current-address/:
+    post:
+      operationId: post_users_current_address
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CurrentAddress'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CurrentAddress'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CurrentAddress'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentAddressSaved'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/voice/speak/:
+    post:
+      operationId: post_voice_speak
+      tags:
+      - voice
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Speak'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+  /api/v1/voice/transcribe/:
+    post:
+      operationId: post_voice_transcribe
+      tags:
+      - voice
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Transcribe'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Transcribe'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transcript'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+          description: ''
+components:
+  schemas:
+    AIAssessmentRequest:
+      type: object
+      properties:
+        incident_summary:
+          type: string
+          maxLength: 5000
+      required:
+      - incident_summary
+    AIConfig:
+      type: object
+      properties:
+        provider:
+          type: string
+        fallback_provider:
+          type: string
+        canary_provider:
+          type: string
+        canary_percent:
+          type: integer
+        models_by_task:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: string
+        timeout_seconds:
+          type: integer
+        max_retries:
+          type: integer
+        monthly_budget_usd:
+          type: string
+          nullable: true
+        kill_switch:
+          type: boolean
+        updated_at:
+          type: string
+          nullable: true
+      required:
+      - canary_percent
+      - canary_provider
+      - fallback_provider
+      - kill_switch
+      - max_retries
+      - models_by_task
+      - monthly_budget_usd
+      - provider
+      - timeout_seconds
+      - updated_at
+    AIDraft:
+      type: object
+      properties:
+        document_type:
+          $ref: '#/components/schemas/DocumentTypeEnum'
+      required:
+      - document_type
+    AIPreview:
+      type: object
+      properties:
+        ai_status:
+          type: string
+        needs_review:
+          type: boolean
+        reasons:
+          type: array
+          items:
+            type: string
+        act:
+          type: string
+        is_cognizable:
+          type: boolean
+          nullable: true
+        ipc_sections:
+          type: object
+          additionalProperties:
+            type: string
+          description: 'Section number to title, e.g. {''303(2)'': ''Theft''}'
+        AI_urgency_score:
+          type: integer
+      required:
+      - act
+      - ai_status
+      - ipc_sections
+      - is_cognizable
+      - needs_review
+      - reasons
+    AIReview:
+      type: object
+      properties:
+        decision:
+          $ref: '#/components/schemas/AIReviewDecisionEnum'
+        sections:
+          type: object
+          additionalProperties:
+            type: string
+            maxLength: 300
+        is_cognizable:
+          type: boolean
+        urgency_score:
+          type: integer
+          maximum: 100
+          minimum: 0
+        notes:
+          type: string
+          default: ''
+          maxLength: 2000
+      required:
+      - decision
+    AIReviewDecisionEnum:
+      enum:
+      - accepted
+      - edited
+      - rejected
+      type: string
+      description: |-
+        * `accepted` - accepted
+        * `edited` - edited
+        * `rejected` - rejected
+    AIUsage:
+      type: object
+      properties:
+        period_days:
+          type: integer
+        calls:
+          type: integer
+        failed_calls:
+          type: integer
+        failure_rate:
+          type: number
+          format: double
+          nullable: true
+        fallback_calls:
+          type: integer
+        latency_ms:
+          $ref: '#/components/schemas/Latency'
+        tokens:
+          $ref: '#/components/schemas/Tokens_'
+        cost_usd:
+          type: number
+          format: double
+          nullable: true
+        month_to_date_cost_usd:
+          type: number
+          format: double
+        monthly_budget_usd:
+          type: number
+          format: double
+          nullable: true
+        breakdown:
+          type: array
+          items:
+            $ref: '#/components/schemas/UsageRow'
+        review_queue_size:
+          type: integer
+        pending_assessments:
+          type: integer
+        officer_reviews:
+          type: integer
+        officer_override_rate:
+          type: number
+          format: double
+          nullable: true
+        kill_switch:
+          type: boolean
+      required:
+      - breakdown
+      - calls
+      - cost_usd
+      - failed_calls
+      - failure_rate
+      - fallback_calls
+      - kill_switch
+      - latency_ms
+      - month_to_date_cost_usd
+      - monthly_budget_usd
+      - officer_override_rate
+      - officer_reviews
+      - pending_assessments
+      - period_days
+      - review_queue_size
+      - tokens
+    AccusedInput:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+          maxLength: 100
+        description:
+          type: string
+          nullable: true
+        contact_info:
+          type: string
+          nullable: true
+        statement:
+          type: string
+          nullable: true
+    Ask:
+      type: object
+      properties:
+        complaint_id:
+          type: string
+          format: uuid
+        question:
+          type: string
+          maxLength: 1000
+      required:
+      - complaint_id
+      - question
+    AssignComplaint:
+      type: object
+      properties:
+        complaint_id:
+          type: string
+          format: uuid
+        head_constable_phone:
+          type: string
+          maxLength: 15
+        notes:
+          type: string
+          default: ''
+        version:
+          type: integer
+          minimum: 1
+      required:
+      - complaint_id
+      - head_constable_phone
+    AssignResult:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+        assigned_to:
+          $ref: '#/components/schemas/AssignedOfficer'
+      required:
+      - assigned_to
+      - message
+      - status
+    AssignedOfficer:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+      required:
+      - name
+      - phone
+    AssistantAnswer:
+      type: object
+      properties:
+        answer:
+          type: string
+        needs_human:
+          type: boolean
+        ai_available:
+          type: boolean
+      required:
+      - ai_available
+      - answer
+      - needs_human
+    BlankEnum:
+      enum:
+      - ''
+    CanaryProviderEnum:
+      enum:
+      - openai
+      - anthropic
+      type: string
+      description: |-
+        * `openai` - openai
+        * `anthropic` - anthropic
+    CaseSummary:
+      type: object
+      properties:
+        summary:
+          type: string
+        facts:
+          type: array
+          items:
+            $ref: '#/components/schemas/SummaryFact'
+        open_questions:
+          type: array
+          items:
+            type: string
+        disclaimer:
+          type: string
+      required:
+      - disclaimer
+      - facts
+      - open_questions
+      - summary
+    CaseTypeCreate:
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/NameEnum'
+      required:
+      - name
+    CaseTypeCreated:
+      type: object
+      properties:
+        case_type_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required:
+      - case_type_id
+      - name
+    CaseTypeEnum:
+      enum:
+      - murder
+      - theft
+      - crime_against_women
+      - public_nuisance
+      type: string
+      description: |-
+        * `murder` - murder
+        * `theft` - theft
+        * `crime_against_women` - crime_against_women
+        * `public_nuisance` - public_nuisance
+    CaseTypeRow:
+      type: object
+      properties:
+        case_type_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        label:
+          type: string
+      required:
+      - case_type_id
+      - label
+      - name
+    ChatMessage:
+      type: object
+      properties:
+        role:
+          type: string
+        content:
+          type: string
+        at:
+          type: string
+      required:
+      - at
+      - content
+      - role
+    CitizenAssessment:
+      type: object
+      properties:
+        ai_status:
+          type: string
+          nullable: true
+        ipc_sections:
+          type: object
+          additionalProperties:
+            type: string
+          description: 'Section number to title, e.g. {''303(2)'': ''Theft''}'
+        ipc_descriptions:
+          type: object
+          additionalProperties:
+            type: string
+          description: 'Section number to title, e.g. {''303(2)'': ''Theft''}'
+        urgency_score:
+          type: integer
+          nullable: true
+        model_version:
+          type: string
+          nullable: true
+        generated_at:
+          type: string
+          nullable: true
+      required:
+      - ai_status
+      - generated_at
+      - ipc_descriptions
+      - ipc_sections
+      - model_version
+      - urgency_score
+    CitizenComplaintDetail:
+      type: object
+      properties:
+        complaint_id:
+          type: string
+          format: uuid
+        case_type:
+          type: string
+        incident_summary:
+          type: string
+        location:
+          type: string
+        incident_date:
+          type: string
+        incident_time:
+          type: string
+        is_cognizable:
+          type: boolean
+        status:
+          type: string
+        status_label:
+          type: string
+        progress_percent:
+          type: integer
+        ai_status:
+          type: string
+          nullable: true
+        ai_urgency_score:
+          type: integer
+        created_at:
+          type: string
+        timeline:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimelineEntry'
+        assessment:
+          $ref: '#/components/schemas/CitizenAssessment'
+        accused:
+          type: array
+          items:
+            $ref: '#/components/schemas/Person'
+        witnesses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Person'
+        evidence_files:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvidenceFileRow'
+        user:
+          type: object
+          additionalProperties: {}
+        evidence:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+      required:
+      - accused
+      - ai_status
+      - ai_urgency_score
+      - assessment
+      - case_type
+      - complaint_id
+      - created_at
+      - evidence
+      - evidence_files
+      - incident_date
+      - incident_summary
+      - incident_time
+      - is_cognizable
+      - location
+      - progress_percent
+      - status
+      - status_label
+      - timeline
+      - user
+      - witnesses
+    CitizenComplaintRow:
+      type: object
+      properties:
+        complaint_id:
+          type: string
+          format: uuid
+        case_type:
+          type: string
+        status:
+          type: string
+        status_label:
+          type: string
+        progress_percent:
+          type: integer
+        incident_summary:
+          type: string
+        incident_date:
+          type: string
+          format: date
+        created_at:
+          type: string
+          format: date-time
+        ai_status:
+          type: string
+          nullable: true
+      required:
+      - ai_status
+      - case_type
+      - complaint_id
+      - created_at
+      - incident_date
+      - incident_summary
+      - progress_percent
+      - status
+      - status_label
+    ComplaintCreate:
+      type: object
+      properties:
+        case_type:
+          $ref: '#/components/schemas/CaseTypeEnum'
+        incident_summary:
+          type: string
+          maxLength: 5000
+        location:
+          type: string
+          maxLength: 1000
+        incident_date:
+          type: string
+          format: date
+        incident_time:
+          type: string
+          format: time
+        station_id:
+          type: string
+          format: uuid
+          nullable: true
+        is_cognizable:
+          type: boolean
+          default: true
+        accused:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccusedInput'
+        witnesses:
+          type: array
+          items:
+            $ref: '#/components/schemas/WitnessInput'
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvidenceInput'
+      required:
+      - case_type
+      - incident_date
+      - incident_summary
+      - incident_time
+      - location
+    ComplaintCreated:
+      type: object
+      properties:
+        message:
+          type: string
+        complaint_id:
+          type: string
+          format: uuid
+      required:
+      - complaint_id
+      - message
+    Consent:
+      type: object
+      properties:
+        purpose:
+          $ref: '#/components/schemas/PurposeEnum'
+        policy_version:
+          type: string
+          maxLength: 20
+        granted:
+          type: boolean
+      required:
+      - granted
+      - policy_version
+      - purpose
+    ConsentState:
+      type: object
+      properties:
+        purpose:
+          type: string
+        label:
+          type: string
+        granted:
+          type: boolean
+        policy_version:
+          type: string
+          nullable: true
+        granted_at:
+          type: string
+          nullable: true
+        revoked_at:
+          type: string
+          nullable: true
+      required:
+      - granted
+      - granted_at
+      - label
+      - policy_version
+      - purpose
+      - revoked_at
+    CurrentAddress:
+      type: object
+      properties:
+        current_address:
+          type: string
+          maxLength: 1000
+      required:
+      - current_address
+    CurrentAddressSaved:
+      type: object
+      properties:
+        message:
+          type: string
+        current_address:
+          type: string
+      required:
+      - current_address
+      - message
+    DocumentTypeEnum:
+      enum:
+      - fir
+      - gd
+      type: string
+      description: |-
+        * `fir` - fir
+        * `gd` - gd
+    DownloadLink:
+      type: object
+      properties:
+        url:
+          type: string
+        expires_in:
+          type: integer
+      required:
+      - expires_in
+      - url
+    DraftCreate:
+      type: object
+      properties:
+        document_type:
+          $ref: '#/components/schemas/DocumentTypeEnum'
+        content:
+          type: string
+          maxLength: 20000
+      required:
+      - content
+      - document_type
+    DraftRow:
+      type: object
+      properties:
+        draft_id:
+          type: string
+          format: uuid
+        document_type:
+          type: string
+        version:
+          type: integer
+        status:
+          type: string
+        source:
+          type: string
+        content:
+          type: string
+        created_at:
+          type: string
+      required:
+      - content
+      - created_at
+      - document_type
+      - draft_id
+      - source
+      - status
+      - version
+    DraftSummary:
+      type: object
+      properties:
+        draft_id:
+          type: string
+          format: uuid
+        document_type:
+          type: string
+        version:
+          type: integer
+        status:
+          type: string
+        source:
+          type: string
+      required:
+      - document_type
+      - draft_id
+      - source
+      - status
+      - version
+    ErrorBody:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: {}
+      required:
+      - code
+      - details
+      - message
+    ErrorEnvelope:
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorBody'
+        request_id:
+          type: string
+      required:
+      - error
+      - request_id
+    Escalate:
+      type: object
+      properties:
+        to_role:
+          $ref: '#/components/schemas/ToRoleEnum'
+        reason:
+          type: string
+          maxLength: 2000
+      required:
+      - reason
+      - to_role
+    EscalationCreated:
+      type: object
+      properties:
+        escalation_id:
+          type: string
+          format: uuid
+      required:
+      - escalation_id
+    EscalationRow:
+      type: object
+      properties:
+        escalation_id:
+          type: string
+          format: uuid
+        to_role:
+          type: string
+        reason:
+          type: string
+        by:
+          type: string
+          nullable: true
+        at:
+          type: string
+      required:
+      - at
+      - by
+      - escalation_id
+      - reason
+      - to_role
+    EvidenceFileInit:
+      type: object
+      properties:
+        file_id:
+          type: string
+          format: uuid
+        filename:
+          type: string
+        type:
+          type: string
+        content_type:
+          type: string
+        size_bytes:
+          type: integer
+        uploaded:
+          type: boolean
+        scan_status:
+          type: string
+        uploaded_at:
+          type: string
+        upload:
+          $ref: '#/components/schemas/UploadTarget'
+      required:
+      - content_type
+      - file_id
+      - filename
+      - scan_status
+      - size_bytes
+      - type
+      - upload
+      - uploaded
+      - uploaded_at
+    EvidenceFileRow:
+      type: object
+      properties:
+        file_id:
+          type: string
+          format: uuid
+        filename:
+          type: string
+        type:
+          type: string
+        size_bytes:
+          type: integer
+        uploaded:
+          type: boolean
+        scan_status:
+          type: string
+      required:
+      - file_id
+      - filename
+      - scan_status
+      - size_bytes
+      - type
+      - uploaded
+    EvidenceInit:
+      type: object
+      properties:
+        filename:
+          type: string
+          maxLength: 255
+        content_type:
+          type: string
+          maxLength: 150
+        size_bytes:
+          type: integer
+          minimum: 1
+        sha256:
+          type: string
+          pattern: ^[0-9a-fA-F]{64}$
+      required:
+      - content_type
+      - filename
+      - sha256
+      - size_bytes
+    EvidenceInput:
+      type: object
+      properties:
+        file_url:
+          type: string
+          format: uri
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+      required:
+      - file_url
+      - type
+    GenderEnum:
+      enum:
+      - male
+      - female
+      - other
+      type: string
+      description: |-
+        * `male` - male
+        * `female` - female
+        * `other` - other
+    HeadConstable:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        phone:
+          type: string
+        department:
+          type: string
+          nullable: true
+      required:
+      - department
+      - name
+      - phone
+      - user_id
+    HeadConstableList:
+      type: object
+      properties:
+        status:
+          type: string
+        head_constables:
+          type: array
+          items:
+            $ref: '#/components/schemas/HeadConstable'
+      required:
+      - head_constables
+      - status
+    IntakeDetail:
+      type: object
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+        report:
+          allOf:
+          - $ref: '#/components/schemas/IntakeReport'
+          nullable: true
+      required:
+      - conversation_id
+      - messages
+      - report
+      - status
+    IntakeMessage:
+      type: object
+      properties:
+        content:
+          type: string
+          maxLength: 2000
+      required:
+      - content
+    IntakeReport:
+      type: object
+      properties:
+        incident_summary:
+          type: string
+        case_type:
+          type: string
+        location:
+          type: string
+        incident_date:
+          type: string
+        incident_time:
+          type: string
+      required:
+      - case_type
+      - incident_date
+      - incident_summary
+      - incident_time
+      - location
+    IntakeStart:
+      type: object
+      properties:
+        language:
+          type: string
+          default: en
+          maxLength: 50
+    IntakeStarted:
+      type: object
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+        disclosure:
+          type: string
+      required:
+      - conversation_id
+      - disclosure
+    IntakeTurn:
+      type: object
+      properties:
+        reply:
+          type: string
+        emergency:
+          type: boolean
+        ready:
+          type: boolean
+        missing:
+          type: array
+          items:
+            type: string
+        report:
+          allOf:
+          - $ref: '#/components/schemas/IntakeReport'
+          nullable: true
+        ai_available:
+          type: boolean
+      required:
+      - ai_available
+      - emergency
+      - missing
+      - ready
+      - reply
+      - report
+    LanguageEnum:
+      enum:
+      - en
+      - hi
+      - te
+      type: string
+      description: |-
+        * `en` - en
+        * `hi` - hi
+        * `te` - te
+    Latency:
+      type: object
+      properties:
+        p50:
+          type: integer
+          nullable: true
+        p95:
+          type: integer
+          nullable: true
+      required:
+      - p50
+      - p95
+    LegalAnswer:
+      type: object
+      properties:
+        answer:
+          type: string
+        in_scope:
+          type: boolean
+          nullable: true
+        disclaimer:
+          type: string
+        sources:
+          type: array
+          items:
+            type: string
+        ai_available:
+          type: boolean
+      required:
+      - ai_available
+      - answer
+      - disclaimer
+      - in_scope
+      - sources
+    LegalAsk:
+      type: object
+      properties:
+        question:
+          type: string
+          maxLength: 1000
+        language:
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
+          default: en
+      required:
+      - question
+    LoginResponse:
+      type: object
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+        token_type:
+          type: string
+        expires_in:
+          type: integer
+        user:
+          $ref: '#/components/schemas/SessionUser'
+      required:
+      - access
+      - expires_in
+      - refresh
+      - token_type
+      - user
+    MagistrateDecision:
+      type: object
+      properties:
+        decision:
+          $ref: '#/components/schemas/MagistrateDecisionDecisionEnum'
+        comments:
+          type: string
+          default: ''
+          maxLength: 2000
+      required:
+      - decision
+    MagistrateDecisionDecisionEnum:
+      enum:
+      - approve
+      - reject
+      type: string
+      description: |-
+        * `approve` - approve
+        * `reject` - reject
+    MagistrateRequest:
+      type: object
+      properties:
+        comments:
+          type: string
+          default: ''
+          maxLength: 2000
+    MagistrateState:
+      type: object
+      properties:
+        awaiting:
+          type: boolean
+        approved:
+          type: boolean
+        comments:
+          type: string
+          nullable: true
+      required:
+      - approved
+      - awaiting
+      - comments
+    MarkUnderInvestigation:
+      type: object
+      properties:
+        complaint_id:
+          type: string
+          format: uuid
+        remarks:
+          type: string
+          default: ''
+        version:
+          type: integer
+          minimum: 1
+      required:
+      - complaint_id
+    Me:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          nullable: true
+        role:
+          type: string
+        designation:
+          type: string
+          nullable: true
+        department:
+          type: string
+          nullable: true
+        station:
+          allOf:
+          - $ref: '#/components/schemas/StationRef'
+          nullable: true
+      required:
+      - department
+      - designation
+      - email
+      - name
+      - phone
+      - role
+      - station
+      - user_id
+    Message:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+      - message
+    NameEnum:
+      enum:
+      - murder
+      - theft
+      - crime_against_women
+      - public_nuisance
+      type: string
+      description: |-
+        * `murder` - murder
+        * `theft` - theft
+        * `crime_against_women` - crime_against_women
+        * `public_nuisance` - public_nuisance
+    NonCognizableComplaintCreate:
+      type: object
+      properties:
+        case_type:
+          $ref: '#/components/schemas/CaseTypeEnum'
+        incident_summary:
+          type: string
+          maxLength: 5000
+        location:
+          type: string
+          maxLength: 1000
+        incident_date:
+          type: string
+          format: date
+        incident_time:
+          type: string
+          format: time
+        station_id:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - case_type
+      - incident_date
+      - incident_summary
+      - incident_time
+      - location
+    NonCognizableCreated:
+      type: object
+      properties:
+        message:
+          type: string
+        complaint_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        ai_status:
+          type: string
+      required:
+      - ai_status
+      - complaint_id
+      - message
+      - status
+    Note:
+      type: object
+      properties:
+        note:
+          type: string
+          maxLength: 5000
+      required:
+      - note
+    NoteCreated:
+      type: object
+      properties:
+        note_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+      required:
+      - note_id
+      - status
+    NoteRow:
+      type: object
+      properties:
+        note_id:
+          type: string
+          format: uuid
+        notes:
+          type: string
+        status:
+          type: string
+        by:
+          type: string
+          nullable: true
+        at:
+          type: string
+      required:
+      - at
+      - by
+      - note_id
+      - notes
+      - status
+    NotificationRow:
+      type: object
+      properties:
+        notification_id:
+          type: string
+          format: uuid
+        event:
+          type: string
+        message:
+          type: string
+        complaint_id:
+          type: string
+          format: uuid
+          nullable: true
+        read:
+          type: boolean
+        created_at:
+          type: string
+      required:
+      - complaint_id
+      - created_at
+      - event
+      - message
+      - notification_id
+      - read
+    NullEnum:
+      enum:
+      - null
+    OTPRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+          maxLength: 15
+          minLength: 10
+      required:
+      - phone
+    OTPVerify:
+      type: object
+      properties:
+        phone:
+          type: string
+          maxLength: 15
+          minLength: 10
+        code:
+          type: string
+          pattern: ^\d{6}$
+      required:
+      - code
+      - phone
+    OfficerAssessment:
+      type: object
+      properties:
+        ai_status:
+          type: string
+        needs_review:
+          type: boolean
+        review_reasons:
+          type: array
+          items:
+            type: string
+        sections:
+          type: object
+          additionalProperties:
+            type: string
+          description: 'Section number to title, e.g. {''303(2)'': ''Theft''}'
+        urgency_score:
+          type: integer
+        confidence:
+          type: number
+          format: double
+          nullable: true
+        reviewed_at:
+          type: string
+          nullable: true
+      required:
+      - ai_status
+      - confidence
+      - needs_review
+      - review_reasons
+      - reviewed_at
+      - sections
+      - urgency_score
+    OfficerComplaintDetail:
+      type: object
+      properties:
+        complaint_id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        is_cognizable:
+          type: boolean
+        available_transitions:
+          type: array
+          items:
+            type: string
+        magistrate_approval:
+          allOf:
+          - $ref: '#/components/schemas/MagistrateState'
+          nullable: true
+        escalations:
+          type: array
+          items:
+            $ref: '#/components/schemas/EscalationRow'
+        drafts:
+          type: array
+          items:
+            $ref: '#/components/schemas/DraftSummary'
+        incident_date:
+          type: string
+        incident_time:
+          type: string
+        urgency_score:
+          type: integer
+        priority:
+          type: string
+        station:
+          allOf:
+          - $ref: '#/components/schemas/StationName'
+          nullable: true
+        assigned_officer:
+          allOf:
+          - $ref: '#/components/schemas/AssignedOfficer'
+          nullable: true
+        assessment:
+          allOf:
+          - $ref: '#/components/schemas/OfficerAssessment'
+          nullable: true
+        accused:
+          type: array
+          items:
+            $ref: '#/components/schemas/Person'
+        witnesses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Person'
+        evidence_files:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvidenceFileRow'
+        user:
+          type: object
+          additionalProperties: {}
+        case_type:
+          type: string
+        status:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        created_at:
+          type: string
+        current_stage:
+          type: string
+        progress_timeline:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProgressEntry'
+      required:
+      - accused
+      - assessment
+      - assigned_officer
+      - available_transitions
+      - case_type
+      - complaint_id
+      - created_at
+      - current_stage
+      - description
+      - drafts
+      - escalations
+      - evidence_files
+      - incident_date
+      - incident_time
+      - is_cognizable
+      - location
+      - magistrate_approval
+      - priority
+      - progress_timeline
+      - station
+      - status
+      - urgency_score
+      - user
+      - version
+      - witnesses
+    OfficerComplaintRow:
+      type: object
+      properties:
+        complaint_id:
+          type: string
+          format: uuid
+        user:
+          $ref: '#/components/schemas/PartyRef'
+        case_type:
+          type: string
+        status:
+          type: string
+        status_label:
+          type: string
+        current_stage:
+          type: string
+        ai_urgency_score:
+          type: integer
+          nullable: true
+        priority:
+          type: string
+        ai_status:
+          type: string
+          nullable: true
+        needs_review:
+          type: boolean
+          nullable: true
+        ipc_sections:
+          type: object
+          additionalProperties:
+            type: string
+          description: 'Section number to title, e.g. {''303(2)'': ''Theft''}'
+        created_at:
+          type: string
+      required:
+      - ai_status
+      - ai_urgency_score
+      - case_type
+      - complaint_id
+      - created_at
+      - current_stage
+      - ipc_sections
+      - needs_review
+      - priority
+      - status
+      - status_label
+      - user
+    OfficerMe:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        phone:
+          type: string
+        designation:
+          type: string
+        role_key:
+          type: string
+        department:
+          type: string
+        station:
+          type: string
+          nullable: true
+      required:
+      - department
+      - designation
+      - name
+      - phone
+      - role_key
+      - station
+      - user_id
+    OfficerStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        high_urgency_open:
+          type: integer
+        awaiting_ai_review:
+          type: integer
+        unassigned:
+          type: integer
+        assigned_to_me:
+          type: integer
+        filed_last_7_days:
+          type: integer
+        by_status:
+          type: object
+          additionalProperties:
+            type: integer
+      required:
+      - assigned_to_me
+      - awaiting_ai_review
+      - by_status
+      - filed_last_7_days
+      - high_urgency_open
+      - total
+      - unassigned
+    PagedCitizenComplaints:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CitizenComplaintRow'
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PagedNotifications:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationRow'
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PagedOfficerComplaints:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfficerComplaintRow'
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PagedReviewQueue:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewQueueRow'
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PartyRef:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+      required:
+      - name
+      - phone
+    PatchedAIConfig:
+      type: object
+      properties:
+        provider:
+          $ref: '#/components/schemas/CanaryProviderEnum'
+        fallback_provider:
+          oneOf:
+          - $ref: '#/components/schemas/CanaryProviderEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        canary_provider:
+          oneOf:
+          - $ref: '#/components/schemas/CanaryProviderEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        canary_percent:
+          type: integer
+          maximum: 100
+          minimum: 0
+        models_by_task:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: string
+        timeout_seconds:
+          type: integer
+          maximum: 120
+          minimum: 1
+        max_retries:
+          type: integer
+          maximum: 5
+          minimum: 0
+        monthly_budget_usd:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        kill_switch:
+          type: boolean
+    Person:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        contact_info:
+          type: string
+          nullable: true
+        statement:
+          type: string
+          nullable: true
+      required:
+      - contact_info
+      - description
+      - name
+      - statement
+    ProgressEntry:
+      type: object
+      properties:
+        stage:
+          type: string
+        timestamp:
+          type: string
+        updated_by:
+          type: string
+      required:
+      - stage
+      - timestamp
+      - updated_by
+    PurposeEnum:
+      enum:
+      - complaint_processing
+      - ai_processing
+      - notifications
+      type: string
+      description: |-
+        * `complaint_processing` - complaint_processing
+        * `ai_processing` - ai_processing
+        * `notifications` - notifications
+    Refresh:
+      type: object
+      properties:
+        refresh:
+          type: string
+      required:
+      - refresh
+    RegisterRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+          pattern: ^\d{10,15}$
+      required:
+      - phone
+    RegisterVerify:
+      type: object
+      properties:
+        phone:
+          type: string
+          pattern: ^\d{10,15}$
+        code:
+          type: string
+          pattern: ^\d{6}$
+        name:
+          type: string
+          maxLength: 100
+          minLength: 2
+        date_of_birth:
+          type: string
+          format: date
+        gender:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/GenderEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        permanent_address:
+          type: string
+          maxLength: 1000
+          minLength: 3
+        email:
+          nullable: true
+          oneOf:
+          - type: string
+            format: email
+          - type: string
+            maxLength: 0
+        aadhar_number:
+          type: string
+          nullable: true
+        consents:
+          type: array
+          items:
+            $ref: '#/components/schemas/RegistrationConsent'
+      required:
+      - code
+      - date_of_birth
+      - name
+      - permanent_address
+      - phone
+    RegistrationConsent:
+      type: object
+      properties:
+        purpose:
+          $ref: '#/components/schemas/PurposeEnum'
+        policy_version:
+          type: string
+          maxLength: 20
+        granted:
+          type: boolean
+      required:
+      - granted
+      - policy_version
+      - purpose
+    ReviewQueueRow:
+      type: object
+      properties:
+        complaint_id:
+          type: string
+          format: uuid
+        case_type:
+          type: string
+        ai_status:
+          type: string
+        urgency_score:
+          type: integer
+        sections:
+          type: object
+          additionalProperties:
+            type: string
+          description: 'Section number to title, e.g. {''303(2)'': ''Theft''}'
+        reasons:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+      required:
+      - ai_status
+      - case_type
+      - complaint_id
+      - created_at
+      - reasons
+      - sections
+      - urgency_score
+    ReviewResult:
+      type: object
+      properties:
+        complaint_id:
+          type: string
+          format: uuid
+        decision:
+          type: string
+      required:
+      - complaint_id
+      - decision
+    SessionUser:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        role:
+          type: string
+      required:
+      - name
+      - role
+      - user_id
+    Speak:
+      type: object
+      properties:
+        text:
+          type: string
+        language:
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
+          default: en
+      required:
+      - text
+    Station:
+      type: object
+      properties:
+        station_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        code:
+          type: string
+        district:
+          type: string
+        state:
+          type: string
+      required:
+      - code
+      - district
+      - name
+      - state
+      - station_id
+    StationName:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+      - name
+    StationRef:
+      type: object
+      properties:
+        station_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        code:
+          type: string
+      required:
+      - code
+      - name
+      - station_id
+    StatusEnum:
+      enum:
+      - pending
+      - under_review
+      - assigned
+      - under_investigation
+      - awaiting_magistrate
+      - fir_registered
+      - gd_recorded
+      - resolved
+      type: string
+      description: |-
+        * `pending` - pending
+        * `under_review` - under_review
+        * `assigned` - assigned
+        * `under_investigation` - under_investigation
+        * `awaiting_magistrate` - awaiting_magistrate
+        * `fir_registered` - fir_registered
+        * `gd_recorded` - gd_recorded
+        * `resolved` - resolved
+    SuggestedAssignee:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        open_cases:
+          type: integer
+      required:
+      - name
+      - open_cases
+      - phone
+    SummaryFact:
+      type: object
+      properties:
+        text:
+          type: string
+        source:
+          type: string
+        source_label:
+          type: string
+      required:
+      - source
+      - source_label
+      - text
+    TimelineEntry:
+      type: object
+      properties:
+        status:
+          type: string
+        label:
+          type: string
+        at:
+          type: string
+          format: date-time
+      required:
+      - at
+      - label
+      - status
+    ToRoleEnum:
+      enum:
+      - sub_inspector
+      - sho
+      type: string
+      description: |-
+        * `sub_inspector` - sub_inspector
+        * `sho` - sho
+    Tokens:
+      type: object
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+        token_type:
+          type: string
+        expires_in:
+          type: integer
+          description: Access token lifetime, seconds
+      required:
+      - access
+      - expires_in
+      - refresh
+      - token_type
+    Tokens_:
+      type: object
+      properties:
+        input:
+          type: integer
+          nullable: true
+        output:
+          type: integer
+          nullable: true
+      required:
+      - input
+      - output
+    Transcribe:
+      type: object
+      properties:
+        audio:
+          type: string
+          format: uri
+        language:
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
+          default: en
+      required:
+      - audio
+    Transcript:
+      type: object
+      properties:
+        text:
+          type: string
+        language:
+          type: string
+      required:
+      - language
+      - text
+    TransitionResult:
+      type: object
+      properties:
+        message:
+          type: string
+        complaint_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        version:
+          type: integer
+        available_transitions:
+          type: array
+          items:
+            type: string
+      required:
+      - available_transitions
+      - complaint_id
+      - status
+      - version
+    TriageSuggestion:
+      type: object
+      properties:
+        suggested_urgency:
+          type: integer
+          nullable: true
+        reasons:
+          type: array
+          items:
+            type: string
+        suggested_assignees:
+          type: array
+          items:
+            $ref: '#/components/schemas/SuggestedAssignee'
+        note:
+          type: string
+      required:
+      - note
+      - reasons
+      - suggested_assignees
+      - suggested_urgency
+    TypeEnum:
+      enum:
+      - image
+      - video
+      - audio
+      - document
+      type: string
+      description: |-
+        * `image` - image
+        * `video` - video
+        * `audio` - audio
+        * `document` - document
+    UpdateStatus:
+      type: object
+      properties:
+        complaint_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        remarks:
+          type: string
+          default: ''
+        version:
+          type: integer
+          minimum: 1
+      required:
+      - complaint_id
+      - status
+    UploadTarget:
+      type: object
+      properties:
+        method:
+          type: string
+        url:
+          type: string
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+      - headers
+      - method
+      - url
+    UsageRow:
+      type: object
+      properties:
+        provider:
+          type: string
+        task:
+          type: string
+        status:
+          type: string
+        calls:
+          type: integer
+        cost_usd:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - calls
+      - cost_usd
+      - provider
+      - status
+      - task
+    WitnessInput:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        contact_info:
+          type: string
+          nullable: true
+        statement:
+          type: string
+          nullable: true
+      required:
+      - name
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    noCredentials:
+      type: http
+      scheme: bearer

@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 
 import dj_database_url
+from corsheaders.defaults import default_headers
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -117,6 +118,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS")
 CORS_ALLOW_CREDENTIALS = True
+# Browsers refuse to send a header the server has not listed, so Idempotency-Key (required when
+# filing a complaint) must be allowed. The frontend also needs to read the request ID and the
+# download filename from responses.
+CORS_ALLOW_HEADERS = (*default_headers, "idempotency-key")
+CORS_EXPOSE_HEADERS = ["X-Request-ID", "Content-Disposition"]
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ["users.authn.authentication.JWTAuthentication"],
@@ -130,7 +136,7 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "core.exceptions.api_exception_handler",
     "DEFAULT_PAGINATION_CLASS": "core.pagination.StandardPagination",
     "PAGE_SIZE": 20,
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "core.api_docs.SmartCopSchema",
 }
 
 SPECTACULAR_SETTINGS = {
@@ -138,6 +144,10 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Complaint management and AI-assisted triage for police stations.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "ENUM_NAME_OVERRIDES": {
+        "ProviderEnum": "ai.models.PROVIDER_CHOICES",
+        "CaseTypeNameEnum": "users.models.CaseType.CASE_TYPE_CHOICES",
+    },
     "PREPROCESSING_HOOKS": ["core.schema.only_v1_endpoints"],
 }
 
@@ -157,7 +167,7 @@ SMS_BACKEND = os.environ.get("SMS_BACKEND", "core.sms.ConsoleSMSBackend")
 # names below are only the defaults when none is set there.
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
-_AI_TASKS = ("classify", "intake", "draft", "summarize", "assist")
+_AI_TASKS = ("classify", "intake", "draft", "summarize", "assist", "legal")
 
 
 def _default_models(provider, fallback_model):
@@ -197,6 +207,14 @@ EVIDENCE_ALLOW_UNSCANNED = os.environ.get("EVIDENCE_ALLOW_UNSCANNED", "false").l
 EVIDENCE_MAX_FILES_PER_COMPLAINT = 50
 MB = 1024 * 1024
 EVIDENCE_MAX_BYTES = {"image": 25 * MB, "audio": 50 * MB, "document": 25 * MB, "video": 200 * MB}
+
+# Speech (voice assistant). The audio goes to the vendor and is not stored.
+SPEECH_PROVIDER = os.environ.get("SPEECH_PROVIDER", "openai")
+SPEECH_STT_MODEL = os.environ.get("SPEECH_STT_MODEL", "whisper-1")
+SPEECH_TTS_MODEL = os.environ.get("SPEECH_TTS_MODEL", "tts-1")
+SPEECH_TIMEOUT_SECONDS = 30
+SPEECH_MAX_AUDIO_BYTES = 10 * 1024 * 1024
+SPEECH_MAX_TTS_CHARS = 1000
 
 AI_RUN_RETENTION_DAYS = int(os.environ.get("AI_RUN_RETENTION_DAYS", 180))
 AI_TOTAL_DEADLINE_SECONDS = 45

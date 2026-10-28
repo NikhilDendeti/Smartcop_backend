@@ -1,18 +1,23 @@
 """Citizen-facing AI endpoints: the complaint intake chat and the status assistant."""
 
+from django.conf import settings
+from django.http import HttpResponse
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
-from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.decorators import api_view, parser_classes, permission_classes, throttle_classes
 from rest_framework.exceptions import NotFound
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 
-from ai.agents import assistant, intake
+from ai.agents import assistant, intake, legal
+from ai.agents.common import AssistantUnavailable
+from ai.speech import SpeechUnavailable, run_speech
 from core import audit
 from core.throttles import AIRateThrottle
-from users.access import complaints_for
+from users.access import CITIZEN, actor_role, complaints_for
 from users.consent import require_consent
 from users.models import Conversation
-from users.permissions import IsCitizen
+from users.permissions import IsAssistantUser, IsCitizen
 
 
 class IntakeMessageSerializer(serializers.Serializer):
@@ -103,4 +108,107 @@ def ask_assistant(request):
 
     result = assistant.answer_question(request.user, complaint, serializer.validated_data["question"])
     audit.record(request, "ask_assistant", "complaint", complaint.pk)
+    return Response(result)
+
+
+# --- Voice and legal information ----------------------------------------------------------------
+LANGUAGES = ["en", "hi", "te"]
+AUDIO_TYPES = {
+    "audio/webm", "video/webm", "audio/ogg", "audio/mpeg", "audio/mp3", "audio/wav", "audio/x-wav",
+    "audio/mp4", "audio/m4a", "audio/x-m4a",
+}
+
+
+class TranscribeSerializer(serializers.Serializer):
+    audio = serializers.FileField()
+    language = serializers.ChoiceField(choices=LANGUAGES, default="en")
+
+    def validate_audio(self, value):
+        if value.size > settings.SPEECH_MAX_AUDIO_BYTES:
+            raise serializers.ValidationError(f"Audio can be at most {settings.SPEECH_MAX_AUDIO_BYTES // (1024 * 1024)} MB.")
+        content_type = (value.content_type or "").split(";")[0].strip().lower()
+        if content_type not in AUDIO_TYPES:
+            raise serializers.ValidationError("Send webm, ogg, mp3, wav or m4a audio.")
+        value.base_type = content_type
+        return value
+
+
+class SpeakSerializer(serializers.Serializer):
+    text = serializers.CharField()
+    language = serializers.ChoiceField(choices=LANGUAGES, default="en")
+
+    def validate_text(self, value):
+        if len(value) > settings.SPEECH_MAX_TTS_CHARS:
+            raise serializers.ValidationError(f"Keep the text under {settings.SPEECH_MAX_TTS_CHARS} characters.")
+        return value
+
+
+class LegalAskSerializer(serializers.Serializer):
+    question = serializers.CharField(max_length=1000)
+    language = serializers.ChoiceField(choices=LANGUAGES, default="en")
+
+
+def _citizen_consent(user):
+    from users.consent import require_consent
+
+    if actor_role(user) == CITIZEN:
+        require_consent(user)  # a citizen's voice or words go to an outside service
+
+
+@extend_schema(request=TranscribeSerializer, tags=["voice"])
+@api_view(["POST"])
+@permission_classes([IsAssistantUser])
+@parser_classes([MultiPartParser, FormParser])
+@throttle_classes([AIRateThrottle])
+def voice_transcribe(request):
+    _citizen_consent(request.user)
+    serializer = TranscribeSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    audio, language = serializer.validated_data["audio"], serializer.validated_data["language"]
+
+    try:
+        text = run_speech(
+            "transcribe",
+            lambda provider, timeout: provider.transcribe(
+                audio.read(), audio.name or "audio", audio.base_type, language, timeout
+            ),
+        )
+    except SpeechUnavailable:
+        raise AssistantUnavailable("Voice input is not available right now. Please type instead.") from None
+
+    audit.record(request, "transcribe", "voice", "", metadata={"bytes": audio.size, "language": language})
+    return Response({"text": text, "language": language})
+
+
+@extend_schema(request=SpeakSerializer, tags=["voice"])
+@api_view(["POST"])
+@permission_classes([IsAssistantUser])
+@parser_classes([JSONParser])
+@throttle_classes([AIRateThrottle])
+def voice_speak(request):
+    _citizen_consent(request.user)
+    serializer = SpeakSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    text, language = serializer.validated_data["text"], serializer.validated_data["language"]
+
+    try:
+        audio = run_speech("speak", lambda provider, timeout: provider.synthesize(text, language, timeout))
+    except SpeechUnavailable:
+        raise AssistantUnavailable("Spoken replies are not available right now.") from None
+
+    audit.record(request, "speak", "voice", "", metadata={"characters": len(text), "language": language})
+    response = HttpResponse(audio, content_type="audio/mpeg")
+    response["Cache-Control"] = "no-store"
+    return response
+
+
+@extend_schema(request=LegalAskSerializer, tags=["ai"])
+@api_view(["POST"])
+@permission_classes([IsAssistantUser])
+@throttle_classes([AIRateThrottle])
+def legal_assistant(request):
+    serializer = LegalAskSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    result = legal.ask(request.user, serializer.validated_data["question"], serializer.validated_data["language"])
+    audit.record(request, "legal_question", "assistant", "")
     return Response(result)

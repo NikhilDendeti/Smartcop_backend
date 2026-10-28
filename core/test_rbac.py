@@ -7,7 +7,15 @@ from django.core.cache import cache
 from django.test import TestCase
 
 from core.models import AuditLog
-from core.testing import auth_headers, fake_classification, make_complaint, make_officer, make_station, make_user
+from core.testing import (
+    auth_headers,
+    fake_classification,
+    grant_consent,
+    make_complaint,
+    make_officer,
+    make_station,
+    make_user,
+)
 from police.models import MagistrateApproval
 from users.models import Complaint
 
@@ -103,6 +111,7 @@ class EndpointRoleTests(RBACTestCase):
             self.assertEqual(self.assign(user).status_code, 403)
 
     def test_ai_assessment_is_open_to_any_signed_in_role_only(self):
+        grant_consent(self.citizen)  # citizens must have agreed to AI analysis first
         with patch("users.api_views.get_ai_assessment", return_value=AI_RESULT):
             self.assertEqual(self.post(self.citizen, "/api/v1/ai/assessments/", {"incident_summary": "x"}).status_code, 200)
             self.assertEqual(self.post(self.si, "/api/v1/ai/assessments/", {"incident_summary": "x"}).status_code, 200)
