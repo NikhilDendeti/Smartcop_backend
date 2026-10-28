@@ -42,5 +42,24 @@ def make_complaint(user, station=None, status="pending"):
     )
 
 
+def fake_classification(**overrides):
+    """A finished ClassificationResult, for tests that should not touch the AI layer."""
+    from ai.classification import ClassificationResult, SectionResult
+
+    values = dict(
+        status="ok",
+        act="bns",
+        sections=[SectionResult("303(2)", "Theft", 0.9, True, True, 60)],
+        is_cognizable=True,
+        urgency_score=60,
+        needs_review=False,
+        provider="openai",
+        model="test-model",
+        prompt_version="builtin-1",
+    )
+    values.update(overrides)
+    return ClassificationResult(**values)
+
+
 def auth_headers(user):
     return {"HTTP_AUTHORIZATION": f"Bearer {issue_token_pair(user)['access']}"}

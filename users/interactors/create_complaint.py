@@ -1,5 +1,6 @@
-from users.models import Complaint, Evidence, Accused, Witness, AIAssessment, CaseType
-from users.utils.ai_predictor import get_ai_assessment
+from ai.classification import classify_incident
+from ai.services import save_assessment
+from users.models import Complaint, Evidence, Accused, Witness, CaseType
 
 class CreateComplaintInteractor:
     def __init__(self, data, user):
@@ -16,9 +17,9 @@ class CreateComplaintInteractor:
 
         case_type_obj = CaseType.objects.get(name=case_type_name)
 
-        ai_result = get_ai_assessment(incident_summary)
-        ipc_sections = ai_result.get("ipc_sections", {})
-        ai_score = ai_result.get("AI_urgency_score", 50)
+        # If the AI is unavailable the complaint is still filed, flagged for manual triage.
+        ai_result = classify_incident(incident_summary, incident_date)
+        ai_score = ai_result.urgency_score or 0
 
         complaint = Complaint.objects.create(
             user=self.user,
@@ -32,13 +33,7 @@ class CreateComplaintInteractor:
             station=self.data.get("station")
         )
 
-        AIAssessment.objects.create(
-            complaint=complaint,
-            ipc_sections=ipc_sections,
-            ipc_descriptions=ipc_sections,
-            urgency_score=ai_score,
-            model_version="gpt-4-0613-preview"
-        )
+        save_assessment(complaint, ai_result)
 
         for acc in self.data.get("accused", []):
             Accused.objects.create(

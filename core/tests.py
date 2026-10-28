@@ -2,11 +2,10 @@ from unittest.mock import patch
 
 from django.test import TestCase
 
-from core.testing import auth_headers, make_complaint, make_user
+from core.testing import auth_headers, fake_classification, make_complaint, make_user
 from users.models import CaseType
 
 JSON = "application/json"
-AI_RESULT = {"is_cognizable": True, "AI_urgency_score": 60, "ipc_sections": {"379": "Theft"}}
 
 
 class PlatformTests(TestCase):
@@ -77,7 +76,7 @@ class PlatformTests(TestCase):
             "incident_time": "10:00:00",
             "user_id": str(other.pk),
         }
-        with patch("users.interactors.create_complaint.get_ai_assessment", return_value=AI_RESULT):
+        with patch("users.interactors.create_complaint.classify_incident", return_value=fake_classification()):
             response = self.client.post("/api/v1/complaints/", payload, content_type=JSON, **auth_headers(citizen))
 
         self.assertEqual(response.status_code, 201)

@@ -10,5 +10,6 @@ redis==8.1.0
 cryptography==50.0.2
 PyJWT==2.15.1
 drf-spectacular==0.30.0
-# Legacy SDK, replaced by the provider-agnostic AI layer in Phase 4
-openai==0.28.1
+openai==3.40.0
+anthropic==2.3.0
+pydantic==2.14.1

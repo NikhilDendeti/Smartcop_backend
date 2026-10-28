@@ -176,6 +176,12 @@ class AIAssessment(models.Model):
     prompt_version = models.CharField(max_length=50, blank=True)
     confidence = models.FloatField(blank=True, null=True)
     needs_review = models.BooleanField(default=False)
+    # "unavailable" means no model could answer, so the sections and score are empty, not guessed.
+    ai_status = models.CharField(
+        max_length=15,
+        choices=(('ok', 'OK'), ('needs_review', 'Needs review'), ('unavailable', 'AI unavailable')),
+        default='needs_review',
+    )
     reviewed_by = models.ForeignKey('User', on_delete=models.SET_NULL, blank=True, null=True, related_name='reviewed_assessments')
     reviewed_at = models.DateTimeField(blank=True, null=True)
     ai_run = models.ForeignKey('ai.AIRun', on_delete=models.SET_NULL, blank=True, null=True, related_name='assessments')

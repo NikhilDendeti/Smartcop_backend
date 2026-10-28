@@ -11,8 +11,12 @@ class AIConfig(models.Model):
 
     provider = models.CharField(max_length=20, choices=PROVIDER_CHOICES, default='openai')
     fallback_provider = models.CharField(max_length=20, choices=PROVIDER_CHOICES, blank=True)
-    # Maps a task name to a model name, e.g. {"classify": "...", "intake": "..."}.
-    models_by_task = models.JSONField(default=dict, blank=True)
+    models_by_task = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='Model per provider and task, e.g. {"anthropic": {"classify": "claude-sonnet-5-5"}}. '
+        "Anything left out uses the environment default.",
+    )
     timeout_seconds = models.PositiveSmallIntegerField(default=20)
     max_retries = models.PositiveSmallIntegerField(default=2)
     monthly_budget_usd = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)

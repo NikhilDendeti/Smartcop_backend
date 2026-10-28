@@ -1,6 +1,6 @@
-from users.models import Complaint, AIAssessment, CaseType
-from users.utils.ai_predictor import get_ai_assessment
-from django.utils import timezone
+from ai.classification import classify_incident
+from ai.services import save_assessment
+from users.models import Complaint, CaseType
 
 class CreateNonCognizableComplaintInteractor:
     def __init__(self, data):
@@ -14,9 +14,9 @@ class CreateNonCognizableComplaintInteractor:
         # Fetch CaseType
         case_type = CaseType.objects.get(name=case_type_name)
 
-        # Step 1: AI Assessment (still used for IPC only)
-        ai_result = get_ai_assessment(summary)
-        ipc_sections = ai_result.get("ipc_sections", {})
+        # Step 1: AI Assessment (legal sections only; no urgency for a GD entry)
+        ai_result = classify_incident(summary, self.data.get("incident_date"))
+        ipc_sections = ai_result.section_map
 
         # Step 2: Create Complaint with GD (not FIR)
         complaint = Complaint.objects.create(
@@ -32,18 +32,13 @@ class CreateNonCognizableComplaintInteractor:
         )
 
         # Step 3: Attach AI Assessment (without urgency)
-        AIAssessment.objects.create(
-            complaint=complaint,
-            ipc_sections=ipc_sections,
-            ipc_descriptions=ipc_sections,
-            urgency_score=0,
-            model_version="SmartCop-v1",
-            generated_at=timezone.now()
-        )
+        save_assessment(complaint, ai_result, urgency_override=0)
 
         return {
             "message": "This is a non-cognizable case. It has been recorded in the General Diary (GD). Police cannot take action without magistrate's permission.",
             "ipc_sections": ipc_sections,
             "complaint_id": str(complaint.complaint_id),
-            "status": "gd_recorded"
+            "status": "gd_recorded",
+            "ai_status": ai_result.status,
+            "needs_review": ai_result.needs_review,
         }

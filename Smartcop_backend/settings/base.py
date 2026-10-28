@@ -6,6 +6,7 @@ Use Smartcop_backend.settings.dev locally and Smartcop_backend.settings.prod whe
 """
 
 import hashlib
+import json
 import os
 from pathlib import Path
 
@@ -151,6 +152,25 @@ OTP_RESEND_COOLDOWN_SECONDS = 60
 # Honoured only when DEBUG is on, so local work does not need an SMS provider.
 DEV_FIXED_OTP = os.environ.get("DEV_FIXED_OTP", "")
 SMS_BACKEND = os.environ.get("SMS_BACKEND", "core.sms.ConsoleSMSBackend")
+
+# AI providers. Which one is used, and its models, is set in the AIConfig admin page; the model
+# names below are only the defaults when none is set there.
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+AI_DEFAULT_MODELS = {
+    "openai": {"classify": os.environ.get("OPENAI_MODEL_CLASSIFY", "gpt-4")},
+    "anthropic": {"classify": os.environ.get("ANTHROPIC_MODEL_CLASSIFY", "claude-sonnet-5-5")},
+}
+# Dollars per million tokens as {"model-name": [input, output]}. Without it, cost and the monthly
+# budget cannot be tracked.
+AI_PRICING = json.loads(os.environ.get("AI_PRICING_JSON", "{}"))
+AI_TOTAL_DEADLINE_SECONDS = 45
+AI_BACKOFF_BASE_SECONDS = 0.5
+AI_BREAKER_THRESHOLD = 5
+AI_BREAKER_WINDOW_SECONDS = 60
+AI_BREAKER_COOLDOWN_SECONDS = 60
+AI_MIN_CONFIDENCE = 0.6
+AI_MAX_OUTPUT_TOKENS = 1024
 
 # The unversioned routes carry no authentication or RBAC. Turn off once the frontend is on /api/v1.
 LEGACY_API_ENABLED = os.environ.get("LEGACY_API_ENABLED", "true").lower() == "true"
