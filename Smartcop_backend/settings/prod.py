@@ -1,3 +1,5 @@
+import os
+
 from django.core.exceptions import ImproperlyConfigured
 
 from .base import *  # noqa: F401,F403
@@ -16,6 +18,13 @@ if not CORS_ALLOWED_ORIGINS:
 
 if DATABASES["default"]["ENGINE"].endswith("sqlite3"):
     raise ImproperlyConfigured("Set DATABASE_URL to a PostgreSQL database in production.")
+
+if os.environ.get("DEV_FIXED_OTP"):
+    raise ImproperlyConfigured("DEV_FIXED_OTP must not be set in production.")
+
+# Secure by default: no SMS means no logins, and the unauthenticated legacy routes stay off.
+SMS_BACKEND = os.environ.get("SMS_BACKEND", "core.sms.UnconfiguredSMSBackend")
+LEGACY_API_ENABLED = os.environ.get("LEGACY_API_ENABLED", "false").lower() == "true"
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = True

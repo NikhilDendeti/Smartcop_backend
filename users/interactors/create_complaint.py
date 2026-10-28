@@ -28,7 +28,8 @@ class CreateComplaintInteractor:
             incident_time=incident_time,
             location=location,
             incident_summary=incident_summary,
-            ai_urgency_score=ai_score
+            ai_urgency_score=ai_score,
+            station=self.data.get("station")
         )
 
         AIAssessment.objects.create(

@@ -1,159 +1,149 @@
-"""Versioned (/api/v1/police) officer-facing endpoints. Identity still comes from phone
-numbers in the request until token authentication and RBAC land in Phase 3."""
+"""Versioned (/api/v1/police) officer-facing endpoints.
+
+Authorisation has two layers: a role check on the endpoint, then complaints_for() so an officer
+only ever reaches complaints in their scope. Out-of-scope complaints answer 404, not 403."""
 
 from drf_spectacular.utils import extend_schema
-from rest_framework.decorators import api_view
-from rest_framework.exceptions import AuthenticationFailed, NotFound, ValidationError
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.response import Response
 
+from core import audit
 from core.pagination import StandardPagination
 from police.interactors.assign_complaint_to_hc import AssignComplaintToHCInteractor
 from police.interactors.get_complaint_details import GetComplaintDetailsInteractor
-from police.interactors.get_head_constable_details import GetHeadConstableDetailsByPhoneInteractor
-from police.interactors.get_si_profile import GetSiProfileInteractor
 from police.interactors.list_all_complaints import ListAllComplaintsInteractor
 from police.interactors.list_head_constables import ListHeadConstablesInteractor
 from police.interactors.mark_under_investigation import MarkUnderInvestigationInteractor
-from police.interactors.si_login import SiLoginInteractor
 from police.interactors.update_complaint_status import UpdateComplaintStatusInteractor
 from police.serializers import (
     AssignComplaintSerializer,
     ComplaintListQuerySerializer,
     MarkUnderInvestigationSerializer,
-    PhoneQuerySerializer,
-    SiLoginSerializer,
-    SiPhoneQuerySerializer,
     UpdateStatusSerializer,
 )
+from users.access import HEAD_CONSTABLE, actor_role, complaints_for, officer_profile
+from users.permissions import IsCaseParticipant, IsCommander, IsOfficer
+
+# Head Constables may only move their own cases into investigation. The full, role-checked
+# transition rules arrive with the Phase 5 state machine.
+HEAD_CONSTABLE_STATUSES = {"under_investigation"}
 
 
-def _raise_for_value_error(error: ValueError):
-    message = str(error)
-    if "otp" in message.lower():
-        raise AuthenticationFailed(message)
-    if "not found" in message.lower():
-        raise NotFound(message)
-    raise ValidationError(message)
-
-
-@extend_schema(request=SiLoginSerializer, tags=["police"])
-@api_view(["POST"])
-def si_login(request):
-    serializer = SiLoginSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-
-    result = SiLoginInteractor(serializer.validated_data["phone"], serializer.validated_data["otp"]).execute()
-    if result.get("status") != "success":
-        if result.get("error") == "Invalid OTP":
-            raise AuthenticationFailed("Invalid OTP.")
-        raise NotFound(result.get("error", "Sub-Inspector not found."))
-    return Response(result)
-
-
-@extend_schema(parameters=[PhoneQuerySerializer], tags=["police"])
-@api_view(["GET"])
-def si_profile(request):
-    serializer = PhoneQuerySerializer(data=request.query_params)
-    serializer.is_valid(raise_exception=True)
-
-    try:
-        return Response(GetSiProfileInteractor(serializer.validated_data["phone"]).execute())
-    except ValueError as error:
-        _raise_for_value_error(error)
-
-
-@extend_schema(parameters=[PhoneQuerySerializer], tags=["police"])
-@api_view(["GET"])
-def head_constable_profile(request):
-    serializer = PhoneQuerySerializer(data=request.query_params)
-    serializer.is_valid(raise_exception=True)
-
-    try:
-        return Response(GetHeadConstableDetailsByPhoneInteractor(serializer.validated_data["phone"]).execute())
-    except ValueError as error:
-        _raise_for_value_error(error)
-
-
-@extend_schema(parameters=[ComplaintListQuerySerializer], tags=["police"])
-@api_view(["GET"])
-def list_complaints(request):
-    query = ComplaintListQuerySerializer(data=request.query_params)
-    query.is_valid(raise_exception=True)
-
-    complaints = ListAllComplaintsInteractor().execute()["complaints"]
-    status_filter = query.validated_data.get("status")
-    if status_filter:
-        complaints = [item for item in complaints if item["status"] == status_filter]
-
-    paginator = StandardPagination()
-    page = paginator.paginate_queryset(complaints, request)
-    return paginator.get_paginated_response(page)
+def _scoped_complaint(user, complaint_id):
+    if not complaints_for(user).filter(pk=complaint_id).exists():
+        raise NotFound("Complaint not found.")
 
 
 @extend_schema(tags=["police"])
 @api_view(["GET"])
+@permission_classes([IsOfficer])
+def officer_me(request):
+    profile = officer_profile(request.user)
+    return Response(
+        {
+            "user_id": str(request.user.pk),
+            "name": request.user.name,
+            "phone": request.user.phone,
+            "designation": profile.get_designation_display(),
+            "role_key": profile.designation,
+            "department": profile.department or "Not Assigned",
+            "station": profile.station.name if profile.station else None,
+        }
+    )
+
+
+@extend_schema(parameters=[ComplaintListQuerySerializer], tags=["police"])
+@api_view(["GET"])
+@permission_classes([IsCaseParticipant])
+def list_complaints(request):
+    query = ComplaintListQuerySerializer(data=request.query_params)
+    query.is_valid(raise_exception=True)
+
+    complaints = complaints_for(request.user)
+    status_filter = query.validated_data.get("status")
+    if status_filter:
+        complaints = complaints.filter(status=status_filter)
+
+    rows = ListAllComplaintsInteractor(queryset=complaints.order_by("-created_at")).execute()["complaints"]
+    audit.record(request, "list", "complaint", "", metadata={"status": status_filter or "", "count": len(rows)})
+
+    paginator = StandardPagination()
+    return paginator.get_paginated_response(paginator.paginate_queryset(rows, request))
+
+
+@extend_schema(tags=["police"])
+@api_view(["GET"])
+@permission_classes([IsCaseParticipant])
 def complaint_details(request, complaint_id):
-    result = GetComplaintDetailsInteractor(complaint_id).execute()
-    if result.get("status") != "success":
-        raise NotFound("Complaint not found.")
-    return Response(result)
+    _scoped_complaint(request.user, complaint_id)
+
+    audit.record(request, "view", "complaint", complaint_id)
+    return Response(GetComplaintDetailsInteractor(complaint_id).execute())
+
+
+@extend_schema(tags=["police"])
+@api_view(["GET"])
+@permission_classes([IsCommander])
+def list_head_constables(request):
+    return Response(ListHeadConstablesInteractor(actor=request.user).execute())
 
 
 @extend_schema(request=AssignComplaintSerializer, tags=["police"])
 @api_view(["POST"])
+@permission_classes([IsCommander])
 def assign_complaint(request):
     serializer = AssignComplaintSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
+    _scoped_complaint(request.user, data["complaint_id"])
 
     try:
         result = AssignComplaintToHCInteractor(
             complaint_id=data["complaint_id"],
             hc_phone=data["head_constable_phone"],
-            si_phone=data["si_phone"],
             notes=data["notes"],
+            actor=request.user,
         ).execute()
     except ValueError as error:
-        _raise_for_value_error(error)
+        raise ValidationError(str(error))
+
+    audit.record(request, "assign", "complaint", data["complaint_id"],
+                 metadata={"assigned_to": result["assigned_to"]["name"]})
     return Response(result)
 
 
 @extend_schema(request=MarkUnderInvestigationSerializer, tags=["police"])
 @api_view(["POST"])
+@permission_classes([IsOfficer])
 def mark_under_investigation(request):
     serializer = MarkUnderInvestigationSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
+    _scoped_complaint(request.user, data["complaint_id"])
 
-    try:
-        result = MarkUnderInvestigationInteractor(
-            complaint_id=data["complaint_id"], si_phone=data["si_phone"], remarks=data["remarks"]
-        ).execute()
-    except ValueError as error:
-        _raise_for_value_error(error)
+    result = MarkUnderInvestigationInteractor(
+        complaint_id=data["complaint_id"], remarks=data["remarks"], actor=request.user
+    ).execute()
+    audit.record(request, "mark_under_investigation", "complaint", data["complaint_id"])
     return Response(result)
-
-
-@extend_schema(parameters=[SiPhoneQuerySerializer], tags=["police"])
-@api_view(["GET"])
-def list_head_constables(request):
-    serializer = SiPhoneQuerySerializer(data=request.query_params)
-    serializer.is_valid(raise_exception=True)
-
-    try:
-        return Response(ListHeadConstablesInteractor(serializer.validated_data["si_phone"]).execute())
-    except ValueError as error:
-        _raise_for_value_error(error)
 
 
 @extend_schema(request=UpdateStatusSerializer, tags=["police"])
 @api_view(["POST"])
+@permission_classes([IsOfficer])
 def update_complaint_status(request):
     serializer = UpdateStatusSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
+    _scoped_complaint(request.user, data["complaint_id"])
+
+    if actor_role(request.user) == HEAD_CONSTABLE and data["status"] not in HEAD_CONSTABLE_STATUSES:
+        raise PermissionDenied("Head Constables can only move a case to under investigation.")
 
     complaint = UpdateComplaintStatusInteractor(str(data["complaint_id"]), data["status"]).execute()
+    audit.record(request, "update_status", "complaint", complaint.complaint_id,
+                 metadata={"new_status": complaint.status})
     return Response(
         {
             "message": "Complaint status updated successfully",

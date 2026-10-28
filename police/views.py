@@ -15,6 +15,8 @@ from police.interactors.update_complaint_status import UpdateComplaintStatusInte
 
 
 @api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
 def get_head_constable_profile_view(request):
     phone = request.query_params.get("phone")
 

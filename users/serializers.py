@@ -1,13 +1,10 @@
 from rest_framework import serializers
 
-from users.models import CaseType, Evidence, User
+from police.models import PoliceStation
+from users.models import CaseType, Evidence
 
 CASE_TYPE_NAMES = [choice[0] for choice in CaseType.CASE_TYPE_CHOICES]
 EVIDENCE_TYPES = [choice[0] for choice in Evidence.EVIDENCE_TYPE]
-
-
-class UserLookupSerializer(serializers.Serializer):
-    phone_number = serializers.CharField(max_length=15)
 
 
 class CaseTypeCreateSerializer(serializers.Serializer):
@@ -15,7 +12,6 @@ class CaseTypeCreateSerializer(serializers.Serializer):
 
 
 class CurrentAddressSerializer(serializers.Serializer):
-    phone_number = serializers.CharField(max_length=15)
     current_address = serializers.CharField(max_length=1000)
 
 
@@ -42,18 +38,18 @@ class EvidenceInputSerializer(serializers.Serializer):
 
 
 class ComplaintBaseSerializer(serializers.Serializer):
-    # user_id is accepted from the body until token authentication lands in Phase 3.
-    user_id = serializers.UUIDField()
+    # The complainant is always the authenticated citizen, never a value from the body.
     case_type = serializers.ChoiceField(choices=CASE_TYPE_NAMES)
     incident_summary = serializers.CharField(max_length=5000)
     location = serializers.CharField(max_length=1000)
     incident_date = serializers.DateField()
     incident_time = serializers.TimeField()
-
-    def validate_user_id(self, value):
-        if not User.objects.filter(user_id=value).exists():
-            raise serializers.ValidationError("User not found.")
-        return value
+    station_id = serializers.PrimaryKeyRelatedField(
+        source="station",
+        queryset=PoliceStation.objects.filter(is_active=True),
+        required=False,
+        allow_null=True,
+    )
 
     def validate_case_type(self, value):
         if not CaseType.objects.filter(name=value).exists():

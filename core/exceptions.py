@@ -4,7 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.http import Http404
 from rest_framework import status
-from rest_framework.exceptions import APIException, ValidationError
+from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
@@ -51,6 +51,11 @@ def api_exception_handler(exc, context):
             "internal_error",
             "Something went wrong. Quote the request ID if you contact support.",
         )
+
+    if isinstance(exc, PermissionDenied):
+        from core.audit import record_denied
+
+        record_denied(context["request"], exc.detail)
 
     if isinstance(exc, ValidationError):
         return error_response(

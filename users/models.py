@@ -30,6 +30,10 @@ class User(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # Lets Django REST Framework treat a User as the authenticated principal.
+    is_authenticated = True
+    is_anonymous = False
+
     def save(self, *args, **kwargs):
         self.aadhar_hash = blind_index(self.aadhar_number) if self.aadhar_number else None
         update_fields = kwargs.get("update_fields")
@@ -217,6 +221,20 @@ class OTPChallenge(models.Model):
             and self.attempts < self.max_attempts
             and self.expires_at > timezone.now()
         )
+
+
+class RefreshToken(models.Model):
+    """Server-side record of an issued refresh token, so it can be rotated and revoked.
+
+    Tokens issued from the same login share a family; replaying a rotated token revokes the family."""
+
+    token_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    family_id = models.UUIDField(db_index=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='refresh_tokens')
+    user_agent = models.CharField(max_length=200, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    revoked_at = models.DateTimeField(blank=True, null=True)
 
 
 class ConsentRecord(models.Model):

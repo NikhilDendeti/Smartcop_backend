@@ -5,6 +5,7 @@ Environment-specific values come from environment variables (see .env.example).
 Use Smartcop_backend.settings.dev locally and Smartcop_backend.settings.prod when deployed.
 """
 
+import hashlib
 import os
 from pathlib import Path
 
@@ -116,10 +117,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS")
 CORS_ALLOW_CREDENTIALS = True
 
-# Authentication and permissions arrive in Phase 3; until then endpoints stay open.
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [],
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
+    "DEFAULT_AUTHENTICATION_CLASSES": ["users.authn.authentication.JWTAuthentication"],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_THROTTLE_RATES": {
+        "otp_ip": "20/hour",
+        "otp_phone": "5/hour",
+        "otp_verify_phone": "10/hour",
+        "ai": "30/hour",
+    },
     "EXCEPTION_HANDLER": "core.exceptions.api_exception_handler",
     "DEFAULT_PAGINATION_CLASS": "core.pagination.StandardPagination",
     "PAGE_SIZE": 20,
@@ -133,6 +139,21 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     "PREPROCESSING_HOOKS": ["core.schema.only_v1_endpoints"],
 }
+
+# Tokens and one-time codes. Signing keys are derived from SECRET_KEY unless set explicitly.
+JWT_SIGNING_KEY = os.environ.get("JWT_SIGNING_KEY") or hashlib.sha256(f"jwt:{SECRET_KEY}".encode()).hexdigest()
+OTP_HASH_KEY = os.environ.get("OTP_HASH_KEY") or hashlib.sha256(f"otp:{SECRET_KEY}".encode()).hexdigest()
+JWT_ACCESS_TTL_SECONDS = int(os.environ.get("JWT_ACCESS_TTL_SECONDS", 15 * 60))
+JWT_REFRESH_TTL_SECONDS = int(os.environ.get("JWT_REFRESH_TTL_SECONDS", 7 * 24 * 3600))
+OTP_TTL_SECONDS = 5 * 60
+OTP_MAX_ATTEMPTS = 5
+OTP_RESEND_COOLDOWN_SECONDS = 60
+# Honoured only when DEBUG is on, so local work does not need an SMS provider.
+DEV_FIXED_OTP = os.environ.get("DEV_FIXED_OTP", "")
+SMS_BACKEND = os.environ.get("SMS_BACKEND", "core.sms.ConsoleSMSBackend")
+
+# The unversioned routes carry no authentication or RBAC. Turn off once the frontend is on /api/v1.
+LEGACY_API_ENABLED = os.environ.get("LEGACY_API_ENABLED", "true").lower() == "true"
 
 # Legacy (pre-/api/v1) complaint endpoint used a hardcoded user. Set this only while
 # the old frontend still posts without a user_id; remove once it is migrated.

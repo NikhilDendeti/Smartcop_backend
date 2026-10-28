@@ -28,6 +28,7 @@ class CreateNonCognizableComplaintInteractor:
             location=self.data.get("location"),
             is_cognizable=False,
             status="gd_recorded",
+            station=self.data.get("station"),
         )
 
         # Step 3: Attach AI Assessment (without urgency)

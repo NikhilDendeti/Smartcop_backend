@@ -3,9 +3,7 @@ from django.urls import path
 from police import api_views
 
 urlpatterns = [
-    path("si/login/", api_views.si_login),
-    path("si/profile/", api_views.si_profile),
-    path("hc/profile/", api_views.head_constable_profile),
+    path("me/", api_views.officer_me),
     path("head-constables/", api_views.list_head_constables),
     path("complaints/", api_views.list_complaints),
     path("complaints/assign/", api_views.assign_complaint),

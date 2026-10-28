@@ -2,8 +2,13 @@ from users.models import Complaint, AIAssessment
 from police.models import *
 
 class ListAllComplaintsInteractor:
+    def __init__(self, queryset=None):
+        # Callers acting for a person pass users.access.complaints_for(user); None means everything.
+        self.queryset = queryset
+
     def execute(self):
-        complaints = Complaint.objects.all().select_related('user', 'case_type', 'assessment')
+        queryset = self.queryset if self.queryset is not None else Complaint.objects.all()
+        complaints = queryset.select_related('user', 'case_type', 'assessment')
         data = []
 
         for complaint in complaints:
