@@ -1,3 +1,0 @@
-django
-djangorestframework
-openai==0.28

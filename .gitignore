@@ -11,8 +11,10 @@ env/
 # SQLite DB
 db.sqlite3
 
-# Environment variables
+# Environment variables (keep the example)
 .env
+.env.*
+!.env.example
 
 # Django specific
 *.log
