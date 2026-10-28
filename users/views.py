@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import render
 
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -23,12 +24,13 @@ def get_user_details(request):
         return Response({"error": "Phone number is required"}, status=status.HTTP_400_BAD_REQUEST)
 
     interactor = GetUserDetailsInteractor(phone_number=phone_number)
-    user_data = interactor.get_user_details()
+    user_data = interactor.execute()
 
-    if user_data:
+    if user_data.get("status") == "success":
         return Response(user_data, status=status.HTTP_200_OK)
-    else:
+    if user_data.get("error") == "User not found":
         return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    return Response({"error": user_data.get("error", "Authentication failed")}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 @api_view(['POST'])
@@ -90,7 +92,9 @@ def ai_assessment_view(request):
 @permission_classes([])
 def create_complaint_view(request):
     try:
-        user_id = "2d4b7fb4-08a8-40a0-8cf7-8c92a2be1078"
+        user_id = request.data.get("user_id") or settings.LEGACY_DEFAULT_USER_ID
+        if not user_id:
+            return Response({"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
         user = User.objects.get(user_id=user_id)
 
         interactor = CreateComplaintInteractor(data=request.data, user=user)
