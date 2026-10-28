@@ -62,6 +62,18 @@ class ComplaintBaseSerializer(serializers.Serializer):
             raise serializers.ValidationError("This case type has not been set up yet.")
         return value
 
+    def validate(self, attrs):
+        # A complaint without a station would be invisible to every officer, so one is never created.
+        # With a single active station the choice is obvious; otherwise the citizen must pick.
+        if attrs.get("station") is None:
+            stations = list(PoliceStation.objects.filter(is_active=True)[:2])
+            if len(stations) != 1:
+                raise serializers.ValidationError(
+                    {"station_id": ["Choose the police station to file this complaint with."]}
+                )
+            attrs["station"] = stations[0]
+        return attrs
+
 
 class ComplaintCreateSerializer(ComplaintBaseSerializer):
     is_cognizable = serializers.BooleanField(default=True)

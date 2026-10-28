@@ -63,7 +63,7 @@ Access tokens last 15 minutes, refresh tokens 7 days.
 - `GET /case-types/` → `[{case_type_id, name, label}]` (`name` is what complaints use: `murder`, `theft`, `crime_against_women`, `public_nuisance`).
 - `POST /complaints/` (citizen, `Idempotency-Key` required) body
   `{case_type, incident_summary, location, incident_date, incident_time, station_id?, is_cognizable?(default true), accused?:[{name,description,contact_info,statement}], witnesses?:[{name,contact_info,statement}]}`
-  → 201 `{message, complaint_id}`. **Do not send videos/base64 or `evidence` URLs; upload files with the evidence calls below after creating the complaint.** The AI analysis runs afterwards in the background: the complaint starts with `ai_status: "pending"`.
+  → 201 `{message, complaint_id}`. **Station rule:** a complaint always goes to a station, otherwise no officer could see it. Send `station_id` (from `GET /stations/`). If you omit it and exactly one station is active, the server uses that one; if there are several (or none) you get 400 `validation_error` with `details.station_id`. The same rule applies to `/complaints/non-cognizable/`. A 400 does not use up the Idempotency-Key. **Do not send videos/base64 or `evidence` URLs; upload files with the evidence calls below after creating the complaint.** The AI analysis runs afterwards in the background: the complaint starts with `ai_status: "pending"`.
 - `POST /complaints/non-cognizable/` same body minus accused/witnesses/is_cognizable → 201 `{message, complaint_id, status:"gd_recorded", ai_status:"pending"}`.
 - `GET /complaints/mine/` → paginated `[{complaint_id, case_type, status, incident_summary, incident_date}]`.
 - `GET /complaints/<id>/` → `{complaint_id, user:{...}, case_type (label), incident_summary, location, incident_date, incident_time, is_cognizable, status, ai_urgency_score, created_at, assessment:{ipc_sections, ipc_descriptions, urgency_score, model_version, generated_at}, accused[], witnesses[], evidence[]}` (404 if not yours). *Gets more fields in B5.*
@@ -96,7 +96,7 @@ Access tokens last 15 minutes, refresh tokens 7 days.
   `[{complaint_id, user:{name,phone}, case_type, status, current_stage, ai_urgency_score, ai_status, needs_review, ipc_sections, created_at}]`.
 - `GET /police/complaints/<id>/` → `{version, is_cognizable, available_transitions[], magistrate_approval:{awaiting,approved,comments}|null, escalations[], drafts[], complaint_id, user:{name,phone,aadhar(masked)}, case_type, status, description, location, created_at, current_stage, progress_timeline:[{stage,timestamp,updated_by}]}`. *Gets many more fields in B3.*
 - Moving a case: `POST /police/complaints/status/` `{complaint_id, status, remarks?, version?}` → `{message, complaint_id, status, version, available_transitions}`.
-  Always send the `version` you loaded; 409 `version_conflict` means reload. 409 `invalid_transition` carries a plain-language `message`. Only offer the buttons in `available_transitions`. Resolving needs `remarks`.
+  **Assigning is not a status change:** `available_transitions` never contains `assigned`, and `POST /police/complaints/status/` with `status:"assigned"` answers 409 `invalid_transition`. Use the assign action (below), which records the head constable. Always send the `version` you loaded; 409 `version_conflict` means reload. 409 `invalid_transition` carries a plain-language `message`. Only offer the buttons in `available_transitions`. Resolving needs `remarks`.
 - `POST /police/complaints/assign/` `{complaint_id, head_constable_phone, notes?, version?}` (SI/SHO) · `GET /police/head-constables/` → `{status, head_constables:[{user_id,name,phone,department}]}` (SI/SHO).
 - `POST /police/complaints/mark-under-investigation/` `{complaint_id, remarks?, version?}`.
 - Notes `GET|POST /police/complaints/<id>/notes/` (`{note}`) · Escalations `GET|POST .../escalations/` (`{to_role: sub_inspector|sho, reason}`).
@@ -161,6 +161,8 @@ Also added to every row of `GET /police/complaints/`: `priority` and `status_lab
 
 ## Changelog (the backend session adds a line each time something lands)
 
+- `available_transitions` no longer lists `assigned`, and the status endpoint refuses it: a case can only become assigned through `POST /police/complaints/assign/`, so it can never be "assigned" to nobody. (Found while checking the officer screen in a browser.)
+- Filing a complaint without `station_id` is no longer possible to do silently: it auto-routes when there is one active station, otherwise 400 `details.station_id` (asked by the frontend).
 - **B6 live**: complete, typed OpenAPI at `/api/schema/` and `docs/openapi.yaml` (see the B6 section).
 - Evidence upload now accepts `video/webm`, `audio/webm` and `audio/ogg`, and ignores codec suffixes in `content_type` (asked for by the frontend).
 - **B2 and B9 live** on the dev server: `POST /voice/transcribe/`, `POST /voice/speak/`, `POST /legal-assistant/ask/`; `POST /ai/assessments/` now needs citizen AI consent. No AI/speech keys on the dev server, so they answer "unavailable" there.

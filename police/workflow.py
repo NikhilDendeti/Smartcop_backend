@@ -101,13 +101,18 @@ RULES = {
 }
 
 
+# Handing a case to someone is its own action (it records who), never a bare status change.
+ASSIGN_ONLY = "assigned"
+
+
 def available_transitions(complaint, actor):
-    """Statuses the actor could move this complaint to right now."""
+    """Statuses the actor could move this complaint to right now, as plain status changes.
+    "assigned" is left out on purpose: use the assign action, which also picks the constable."""
     role = actor_role(actor)
     return [
         target
         for target, rule in RULES.get(complaint.status, {}).items()
-        if role in rule.roles and not (rule.check and rule.check(complaint, "closing note"))
+        if target != ASSIGN_ONLY and role in rule.roles and not (rule.check and rule.check(complaint, "closing note"))
     ]
 
 

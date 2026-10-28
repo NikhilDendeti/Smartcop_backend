@@ -5,7 +5,7 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
 from core.test_rbac import RBACTestCase
-from core.testing import auth_headers, fake_classification, make_complaint, make_user
+from core.testing import auth_headers, fake_classification, make_complaint, make_officer, make_user
 from police.models import CaseProgress, Escalation, FIRDraft, MagistrateApproval
 from users.models import AIAssessment, Complaint, Notification
 
@@ -86,7 +86,7 @@ class StateMachineTests(WorkflowTestCase):
 
     def test_a_stale_version_is_refused(self):
         self.move(self.si, self.complaint, "under_review")
-        stale = self.move(self.sho, self.complaint, "assigned", version=1)
+        stale = self.move(self.sho, self.complaint, "resolved", version=1)
 
         self.assertEqual(stale.status_code, 409)
         self.assertEqual(stale.json()["error"]["code"], "version_conflict")
@@ -97,7 +97,7 @@ class StateMachineTests(WorkflowTestCase):
 
     def test_details_list_what_the_officer_can_do_next(self):
         body = self.get(self.si, f"{BASE}/{self.complaint.pk}/").json()
-        self.assertEqual(sorted(body["available_transitions"]), ["assigned", "under_review"])
+        self.assertEqual(body["available_transitions"], ["under_review"])  # assigning is its own action
         self.assertEqual(body["version"], 1)
 
     def test_the_citizen_is_notified_of_status_changes(self):
@@ -281,7 +281,8 @@ class CreationTests(WorkflowTestCase):
         if key is not None:
             headers["HTTP_IDEMPOTENCY_KEY"] = key
         with patch("ai.assessment.classify_incident", return_value=fake_classification()):
-            return self.client.post("/api/v1/complaints/", body or self.BODY, content_type=JSON, **headers)
+            payload = {"station_id": str(self.station_a.pk), **(body or self.BODY)}
+            return self.client.post("/api/v1/complaints/", payload, content_type=JSON, **headers)
 
     def test_a_retry_with_the_same_key_creates_nothing_new(self):
         before = Complaint.objects.count()
@@ -373,3 +374,27 @@ class ListPerformanceTests(WorkflowTestCase):
             make_complaint(make_user(), self.station_a)
         body = self.get(self.si, f"{BASE}/?page_size=2").json()
         self.assertEqual((body["count"], len(body["results"])), (6, 2))
+
+
+class AssignmentIsItsOwnActionTests(WorkflowTestCase):
+    def test_a_bare_status_change_to_assigned_is_refused_so_no_case_is_assigned_to_nobody(self):
+        response = self.move(self.si, self.complaint, "assigned")
+
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json()["error"]["code"], "invalid_transition")
+        self.assertIn("assign action", response.json()["error"]["message"])
+        self.complaint.refresh_from_db()
+        self.assertEqual((self.complaint.status, self.complaint.officer_assigned), ("pending", None))
+
+    def test_assigned_is_never_offered_as_a_plain_next_step(self):
+        for status in ["pending", "under_review", "assigned"]:
+            complaint = make_complaint(self.citizen, self.station_a, status=status)
+            offered = self.get(self.si, f"{BASE}/{complaint.pk}/").json()["available_transitions"]
+            self.assertNotIn("assigned", offered, status)
+
+    def test_the_assign_action_still_works_and_can_reassign(self):
+        self.assertEqual(self.assign(self.si).status_code, 200)
+        other = make_officer("head_constable", self.station_a)
+        self.assertEqual(self.assign(self.si, hc=other).status_code, 200)
+        self.complaint.refresh_from_db()
+        self.assertEqual((self.complaint.status, self.complaint.officer_assigned), ("assigned", other))

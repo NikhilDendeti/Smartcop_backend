@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from django.test import TestCase
 
-from core.testing import auth_headers, fake_classification, make_complaint, make_user
+from core.testing import auth_headers, fake_classification, make_complaint, make_station, make_user
 from users.models import CaseType
 
 JSON = "application/json"
@@ -66,6 +66,7 @@ class PlatformTests(TestCase):
         self.assertIn("case_type", response.json()["error"]["details"])
 
     def test_complaint_is_filed_under_the_authenticated_citizen(self):
+        make_station("ONE")  # a single station: the complaint is routed to it automatically
         citizen = make_user()
         other = make_user()
         payload = {

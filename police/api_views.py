@@ -185,6 +185,8 @@ def update_complaint_status(request):
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
     complaint = _scoped(request.user, data["complaint_id"])
+    if data["status"] == workflow.ASSIGN_ONLY:
+        raise workflow.InvalidTransition("To assign a case, use the assign action so a head constable is chosen.")
 
     updated = workflow.apply_transition(
         complaint, data["status"], request.user, data["remarks"], expected_version=data.get("version")
